@@ -1,0 +1,29 @@
+server:
+  port: 8060
+
+data:
+  mode:
+    compareAndUpdate: true
+  upload:
+    input:
+      skipHeader: true
+
+logging:
+  level:
+    com.yantriks: INFO
+
+urban:
+  sterling:
+    protocol: http
+    url: localhost:7001
+    apitester:
+      userid: admin
+      password: password
+  yantriks:
+    protocol: http
+    availability:
+        url: localhost:8080
+    inventorylite:
+        url: localhost:8096
+    masterdata:
+        url: localhost:8094
