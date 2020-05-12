@@ -2,8 +2,6 @@ package com.yantriks.urbandatacomparator.util;
 
 public class UrbanConstants {
 
-    public static final String CONST_ADMIN = "admin";
-    public static final String CONST_PASSWORD = "password";
     public static final String CONST_YFS_ENV = "YFSEnvironment";
     public static final String CONST_PROG_ID = "progId";
     public static final String CONST_STERLING_API_TESTER = "SterlingHttpTester";

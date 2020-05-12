@@ -2,6 +2,7 @@ package com.yantriks.urbandatacomparator.model;
 
 import com.yantriks.urbandatacomparator.util.UrbanConstants;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 @Component
