@@ -5,6 +5,7 @@ import com.sterlingcommerce.baseutil.SCXmlUtil;
 import com.yantriks.urbandatacomparator.model.*;
 import com.yantriks.urbandatacomparator.util.UrbanConstants;
 import com.yantriks.urbandatacomparator.util.YantriksUtil;
+import com.yantriks.urbandatacomparator.validation.UrbanReservationComparator;
 import com.yantriks.yih.adapter.util.YantriksConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,9 @@ public class UrbanToYantriksOrderDirectUpdate {
 
     @Autowired
     YantriksUtil yantriksUtil;
+
+    @Autowired
+    UrbanReservationComparator urbanReservationComparator;
 
     @Autowired
     UrbanURI urbanURI;
@@ -102,7 +106,7 @@ public class UrbanToYantriksOrderDirectUpdate {
                                     String quantity = element.getAttribute(UrbanConstants.A_QUANTITY);
                                     int intQty = (int) Double.parseDouble(quantity);
                                     String statusOfDemand = element.getAttribute(YantriksConstants.A_STATUS);
-                                    String demandType = yantriksUtil.getDemandTypeForCurrentStatus(statusOfDemand);
+                                    String demandType = urbanReservationComparator.getDemandTypeForCurrentStatus(statusOfDemand);
                                     log.debug("UrbanToyantriksOrderDirectUpdate : Demand Type Returned : " + demandType);
                                     if (!UrbanConstants.IM_LIST_SHIPPED_STATUSES.contains(statusOfDemand) || null != demandType) {
                                         YantriksReservationDemandTypeRequest yantriksReservationDemandTypeRequest = YantriksReservationDemandTypeRequest.builder()
