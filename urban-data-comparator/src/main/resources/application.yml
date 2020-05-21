@@ -3,14 +3,15 @@ server:
 
 data:
   mode:
-    compareAndUpdate: true
+    comparegenerate: true
+    compareupdate: false
   upload:
     input:
       skipHeader: true
 
 logging:
   level:
-    com.yantriks: INFO
+    com.yantriks: DEBUG
 
 urban:
   sterling:
@@ -20,10 +21,23 @@ urban:
       userid: admin
       password: password
   yantriks:
+    availabilityproduct: yas
+    inventoryproduct: ilt
+    masterdataproduct: ycs
     protocol: http
+    timeout: 1000
     availability:
-        url: localhost:8080
+        host: localhost
+        port: 8080
     inventorylite:
-        url: localhost:8096
+        host: localhost:8096
+        port: 8096
     masterdata:
-        url: localhost:8094
+        host: localhost
+        port: 8094
+
+yantriks:
+  default:
+    orgid: URBN
+    fulfillmentservice: STANDARD
+    segment: DEFAULT

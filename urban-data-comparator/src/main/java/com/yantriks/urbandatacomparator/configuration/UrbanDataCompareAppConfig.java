@@ -1,7 +1,8 @@
 package com.yantriks.urbandatacomparator.configuration;
 
 import com.yantriks.urbandatacomparator.route.UrbanCSVRoute;
-import com.yantriks.urbandatacomparator.util.SterlingApiCall;
+import com.yantriks.urbandatacomparator.sterlingapis.SterlingGetInvListCall;
+import com.yantriks.urbandatacomparator.sterlingapis.SterlingGetOrderListCall;
 import org.apache.camel.CamelContext;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,19 +19,17 @@ public class UrbanDataCompareAppConfig {
     @Autowired
     UrbanCSVRoute urbanCsvRoute;
 
-    @Autowired
-    SterlingApiCall sterlingApiCall;
-
     @PostConstruct
     public void postConstruct() throws Exception {
 
         CamelContext camelContext = new DefaultCamelContext();
         System.out.println("Here in Post Construct");
-        //camelContext.addRoutes(urbanCsvRoute);
-        //camelContext.start();
-        //Thread.sleep(4000);
-        //camelContext.stop();
-        sterlingApiCall.test();
+        camelContext.addRoutes(urbanCsvRoute);
+        camelContext.start();
+        Thread.sleep(4000);
+        camelContext.stop();
+        //sterlingGetInvListCall.executeGetInvListApi("getExternalInvCheck_internal");
+        //sterlingGetOrderListCall.executeGetOLListApi("Y100005200", "DEFAULT");
     }
 
 }

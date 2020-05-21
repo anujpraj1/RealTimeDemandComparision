@@ -18,7 +18,7 @@ public class UrbanCSVRoute extends RouteBuilder {
 
     private static String SEDA_END_POINT = "seda:datacomparequeue";
 
-    @Value("${data.mode.compareAndUpdate}")
+    @Value("${data.mode.comparegenerate}")
     private Boolean actionMode;
 
     @Value("${data.upload.input.skipHeader}")
@@ -26,6 +26,12 @@ public class UrbanCSVRoute extends RouteBuilder {
 
     @Autowired
     UrbanConditionCheck urbanConditionCheck;
+
+    @Autowired
+    UrbanDataCompareProcessor urbanDataCompareProcessor;
+
+    @Autowired
+    UrbanSedaMessageProcessor urbanSedaMessageProcessor;
 
     @Override
     public void configure() throws Exception {
@@ -46,10 +52,10 @@ public class UrbanCSVRoute extends RouteBuilder {
         log.info("Data Mode Log Level :: "+actionMode);
         log.debug("Data Mode Log Level :: "+actionMode);
         log.error("Error mode");
-        log.warn("Error mode Warnign");
+        log.warn("Error mode Warning");
 
 
-        from("file:/home/YANTRIKS/anuj.kumar/YantriksStuff/csvdir/input?noop=true&maxMessagesPerPoll=1&delay=5000")
+        /*from("file:/home/YANTRIKS/anuj.kumar/YantriksStuff/csvdir/input?noop=true&maxMessagesPerPoll=1&delay=5000")
                 .unmarshal(csvDataFormat)
                 .split(body())
                 .streaming()
@@ -63,8 +69,25 @@ public class UrbanCSVRoute extends RouteBuilder {
                 .otherwise()
                 .process(new UrbanDataCompareProcessor())
                 .to("file:/home/YANTRIKS/anuj.kumar/YantriksStuff/csvdir/output?fileExist=Append")
-                .end();
+                .end();*/
 
-        from(SEDA_END_POINT).threads(5).process(new UrbanSedaMessageProcessor()).to("file:/home/YANTRIKS/anuj.kumar/YantriksStuff/csvdir/output?fileExist=Append");
+        /*from("file:C:\\tmp\\in?noop=true&maxMessagesPerPoll=1&delay=5000").threads(5).process(new UrbanSedaMessageProcessor())
+                .setHeader(Exchange.HTTP_METHOD, simple("GET"))
+                .setHeader(Exchange.CONTENT_TYPE, constant("application/json")).to("http://localhost:8096/inventory-services/supply-type/ORG001")
+                .to("direct:restresponse");
+        from("direct:restresponse").process(new SysOutProcessorA()).to("direct:out");
+        from("direct:out").process(new SysOutProcessorA());*/
+
+
+        from("file:C:\\tmp\\in?noop=true&maxMessagesPerPoll=1&delay=5000")
+                .unmarshal(csvDataFormat)
+                .split(body())
+                .streaming()
+                .executorService(Executors.newFixedThreadPool(3))
+                .process(urbanSedaMessageProcessor)
+                .to(SEDA_END_POINT);
+
+        from(SEDA_END_POINT).process(urbanDataCompareProcessor);
+
     }
 }

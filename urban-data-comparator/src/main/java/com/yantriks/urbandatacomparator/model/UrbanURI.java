@@ -17,14 +17,23 @@ public class UrbanURI {
     @Value("${urban.yantriks.protocol}")
     private String yantriksProtocol;
 
-    @Value("${urban.yantriks.availability.url}")
-    private String availabilityURL;
+    @Value("${urban.yantriks.availability.host}")
+    private String availabilityHost;
 
-    @Value("${urban.yantriks.inventorylite.url}")
-    private String invLiteURL;
+    @Value("${urban.yantriks.inventorylite.host}")
+    private String invLiteHost;
 
-    @Value("${urban.yantriks.masterdata.url}")
-    private String commonURL;
+    @Value("${urban.yantriks.masterdata.host}")
+    private String commonHost;
+
+    @Value("${urban.yantriks.availability.port}")
+    private String availabilityPort;
+
+    @Value("${urban.yantriks.inventorylite.port}")
+    private String invLitePort;
+
+    @Value("${urban.yantriks.masterdata.port}")
+    private String masterDataPort;
 
     public String getSterlingURL() {
         StringBuilder sb = new StringBuilder();
@@ -39,7 +48,13 @@ public class UrbanURI {
         StringBuilder sb = new StringBuilder();
         sb.append(yantriksProtocol);
         sb.append("://");
-        sb.append(availabilityURL);
+        if (availabilityPort == null || availabilityPort.isEmpty()) {
+            sb.append(availabilityHost);
+        } else {
+            sb.append(availabilityHost);
+            sb.append(":");
+            sb.append(availabilityPort);
+        }
         sb.append(urlSuffix);
         return sb.toString();
     }
@@ -48,7 +63,13 @@ public class UrbanURI {
         StringBuilder sb = new StringBuilder();
         sb.append(yantriksProtocol);
         sb.append("://");
-        sb.append(invLiteURL);
+        if (invLitePort == null || invLitePort.isEmpty()) {
+            sb.append(invLiteHost);
+        } else {
+            sb.append(invLiteHost);
+            sb.append(":");
+            sb.append(invLitePort);
+        }
         sb.append(urlSuffix);
         return sb.toString();
     }
@@ -57,8 +78,40 @@ public class UrbanURI {
         StringBuilder sb = new StringBuilder();
         sb.append(yantriksProtocol);
         sb.append("://");
-        sb.append(commonURL);
+        if (masterDataPort == null || masterDataPort.isEmpty()) {
+            sb.append(commonHost);
+        } else {
+            sb.append(masterDataPort);
+            sb.append(":");
+            sb.append(commonHost);
+        }
         sb.append(urlSuffix);
         return sb.toString();
+    }
+
+
+    public StringBuilder getReservationUrl(StringBuilder lineReserveUrl, String sellingChannel, String transactionType,
+                                           boolean canReserveAfter, boolean considerCapacity, boolean considerGtin, boolean ignoreAvailabilityCheck) {
+        lineReserveUrl.append("/");
+        lineReserveUrl.append(sellingChannel);
+        lineReserveUrl.append("/");
+        lineReserveUrl.append(transactionType);
+        lineReserveUrl.append("?");
+        lineReserveUrl.append(UrbanConstants.CAN_RESERVE_AFTER);
+        lineReserveUrl.append("=");
+        lineReserveUrl.append(canReserveAfter);
+        lineReserveUrl.append("&");
+        lineReserveUrl.append(UrbanConstants.CONSIDER_CAPACITY);
+        lineReserveUrl.append("=");
+        lineReserveUrl.append(considerCapacity);
+        lineReserveUrl.append("&");
+        lineReserveUrl.append(UrbanConstants.CONSIDER_GTIN);
+        lineReserveUrl.append("=");
+        lineReserveUrl.append(considerGtin);
+        lineReserveUrl.append("&");
+        lineReserveUrl.append(UrbanConstants.IGNORE_AVAILABILITY_CHECK);
+        lineReserveUrl.append("=");
+        lineReserveUrl.append(ignoreAvailabilityCheck);
+        return lineReserveUrl;
     }
 }
