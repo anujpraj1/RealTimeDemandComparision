@@ -24,6 +24,12 @@ public class UrbanCSVRoute extends RouteBuilder {
     @Value("${data.upload.input.skipHeader}")
     private Boolean skipHeader;
 
+    @Value("${data.process.sedathreads}")
+    private Integer sedathreads;
+
+    @Value("${data.process.csvthreads}")
+    private Integer csvthreads;
+
     @Autowired
     UrbanConditionCheck urbanConditionCheck;
 
@@ -83,11 +89,11 @@ public class UrbanCSVRoute extends RouteBuilder {
                 .unmarshal(csvDataFormat)
                 .split(body())
                 .streaming()
-                .executorService(Executors.newFixedThreadPool(3))
+                .executorService(Executors.newFixedThreadPool(csvthreads))
                 .process(urbanSedaMessageProcessor)
                 .to(SEDA_END_POINT);
 
-        from(SEDA_END_POINT).process(urbanDataCompareProcessor);
+        from(SEDA_END_POINT).threads(sedathreads).process(urbanDataCompareProcessor);
 
     }
 }

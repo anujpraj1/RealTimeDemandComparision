@@ -8,6 +8,9 @@ data:
   upload:
     input:
       skipHeader: true
+  process:
+    sedathreads: 5
+    csvthreads: 3
 
 logging:
   level:

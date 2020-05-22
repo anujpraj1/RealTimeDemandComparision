@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class YantriksReservationDemandTypeResponse {
     private String demandType;
-    private String quantity;
+    private int quantity;
     private String reservationDate;
     private String segment;
 }
