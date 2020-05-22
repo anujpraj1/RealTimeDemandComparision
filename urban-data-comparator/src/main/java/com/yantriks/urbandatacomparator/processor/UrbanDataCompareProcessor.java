@@ -32,7 +32,7 @@ public class UrbanDataCompareProcessor implements Processor {
     UrbanToYantriksOrderDirectUpdate urbanToYantriksOrderDirectUpdate;
 
     @Autowired
-    UrbanToYantriksOrderCompareUpdate urbanToYantriksOrderCompareUpdate;
+    UrbanToYantriksCompareUpdate urbanToYantriksCompareUpdate;
 
     @Override
     public void process(Exchange exchange) throws Exception {
@@ -63,12 +63,13 @@ public class UrbanDataCompareProcessor implements Processor {
                 log.debug("UrbanDataCompareProcessor: directUpdateToInvYantriks : Done");
             } else {
                 log.debug("UrbanDataCompareProcessor: Comparing both reservation and getInventoryReservationList output, generating report or/and updating the yantriks");
-
+                urbanToYantriksCompareUpdate.compareReservationsAndUpdate(getInventoryReservationList, reservationResponse, false);
             }
         } else {
             log.debug("UrbanDataCompareProcessor: No Reservation found hence will check and call getOrderList ");
             if (isEmptyOrNull(orderId) || isEmptyOrNull(enterpriseCode)) {
                 log.error("UrbanDataCompareProcessor: Reservation Id was blank and either order is NA or enterprisecode is NA hence subsequent comparision can't be made");
+                log.error("There can be a possibility that soft reservation is expired or Order is created but orderid and enterprisecode is not passed")
             } else {
                 log.debug("UrbanDataCompareProcessor: Calling getOrderList API of sterling");
                 Document getOrderListOP = sterlingGetOrderListCall.executeGetOLListApi(orderId, enterpriseCode);
@@ -78,7 +79,7 @@ public class UrbanDataCompareProcessor implements Processor {
                     urbanToYantriksOrderDirectUpdate.directUpdateToYantriks(getOrderListOP);
                 } else {
                     log.debug("UrbanDataCompareProcessor: Comparing both reservation and getOrderList Output, generating report or/and updating the yantriks");
-                    urbanToYantriksOrderCompareUpdate.compareReservationsAndUpdate(getOrderListOP, reservationResponse);
+                    urbanToYantriksCompareUpdate.compareReservationsAndUpdate(getOrderListOP, reservationResponse, false);
                 }
             }
         }

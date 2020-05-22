@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yantriks.urbandatacomparator.model.*;
 import com.yantriks.urbandatacomparator.util.UrbanConstants;
 import com.yantriks.urbandatacomparator.util.YantriksUtil;
+import com.yantriks.urbandatacomparator.validation.UrbanPopulateInventoryReservationRequest;
 import com.yantriks.urbandatacomparator.validation.UrbanPopulateOrderReservationRequest;
 import com.yantriks.yih.adapter.util.YantriksConstants;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +18,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class UrbanToYantriksOrderCompareUpdate {
+public class UrbanToYantriksCompareUpdate {
 
     @Value("${data.mode.comparegenerate}")
     private Boolean compareAndGenerate;
@@ -34,13 +35,21 @@ public class UrbanToYantriksOrderCompareUpdate {
     @Autowired
     UrbanPopulateOrderReservationRequest urbanPopulateOrderReservationRequest;
 
-    public void compareReservationsAndUpdate(Document getOrderListOutput, String reservationResponse) throws JsonProcessingException {
+    @Autowired
+    UrbanPopulateInventoryReservationRequest urbanPopulateInventoryReservationRequest;
+
+    public void compareReservationsAndUpdate(Document inDoc, String reservationResponse, boolean isUpdateFromInventoryReservation) throws Exception {
 
         ObjectMapper objMapper = new ObjectMapper();
         YantriksReservationResponse yantriksReservationResponse = objMapper.readValue(reservationResponse, YantriksReservationResponse.class);
         log.debug("UrbanToYantriksCompareUpdate : YantriksReservationResponse : "+yantriksReservationResponse);
-        YantriksReservationRequest yantriksReservationRequest = urbanPopulateOrderReservationRequest.createReservationRequestFromOrderListOP(getOrderListOutput);
-        log.debug("UrbanToYantriksCompareUpdate: Reservation Picture in getOrderList Call : "+yantriksReservationRequest);
+        YantriksReservationRequest yantriksReservationRequest= null;
+        if (isUpdateFromInventoryReservation) {
+            yantriksReservationRequest = urbanPopulateInventoryReservationRequest.createReservationRequestFromInventoryReservation(inDoc);
+        } else {
+            yantriksReservationRequest = urbanPopulateOrderReservationRequest.createReservationRequestFromOrderListOP(inDoc);
+        }
+        log.debug("UrbanToYantriksCompareUpdate: Reservation Request : "+yantriksReservationRequest);
 
         boolean areBothReservationsSame = true;
         if (!yantriksReservationResponse.getOrderId().equals(yantriksReservationRequest.getOrderId())) {
