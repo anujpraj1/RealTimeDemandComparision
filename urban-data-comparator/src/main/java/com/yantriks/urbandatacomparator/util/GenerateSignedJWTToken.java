@@ -70,7 +70,7 @@ public class GenerateSignedJWTToken implements YIFCustomApi {
     //String strKeyID = YFSSystem.getProperty("yantriks.jwt.token.kid");
 
     String strKeyID = "STERLING-1";
-    log.debug(">>>>>>>>>>KeyID:" + strKeyID);
+    log.debug(">>>>>>>>>KeyID:" + strKeyID);
     
     // Getting expiryLength from customer_overrides
     //String strExpiryLenght = YFSSystem.getProperty("yantriks.jwt.token.expiryLength");
