@@ -23,7 +23,7 @@ import java.util.Map;
 
 @Component
 @Slf4j
-public class SterlingGetOrganizationListCall {
+public class SterlingGetShipNodeListCall {
 
 	@Autowired
 	UrbanURI urbanURI;
@@ -60,14 +60,14 @@ public class SterlingGetOrganizationListCall {
 
 
 		input = XApiXmlUtil.createDocument();
-		root = input.createElement(UrbanConstants.ELE_ORGANIZATION);
+		root = input.createElement(UrbanConstants.ELE_SHIPNODE);
 		//root = inEle;
 		input.appendChild(root);
-		root.setAttribute(UrbanConstants.A_ORGANIZATION_CODE, locationId);
-		env.setApiTemplate(UrbanConstants.API_GET_ORGANIZATION_LIST, SCXmlUtil.createFromString(UrbanConstants.TEMPLATE_GET_ORGANIZATION_LIST));
-		System.out.println("Input for getOrganizationList "+XApiXmlUtil.getString(input));
-		Document doc = api.invoke(env, UrbanConstants.API_GET_ORGANIZATION_LIST, input);
-		System.out.println("Output for getOrganizationList "+XApiXmlUtil.getString(doc));
+		root.setAttribute(UrbanConstants.A_SHIP_NODE, locationId);
+		env.setApiTemplate(UrbanConstants.API_GET_SHIP_NODE_LIST, SCXmlUtil.createFromString(UrbanConstants.TEMPLATE_GET_SHIPNODE_LIST));
+		System.out.println("Input for getShipNodeList "+XApiXmlUtil.getString(input));
+		Document doc = api.invoke(env, UrbanConstants.API_GET_SHIP_NODE_LIST, input);
+		System.out.println("Output for getShipNodeList "+XApiXmlUtil.getString(doc));
 
 		return doc;
 	}

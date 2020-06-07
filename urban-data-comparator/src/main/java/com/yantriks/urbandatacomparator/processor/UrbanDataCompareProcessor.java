@@ -1,6 +1,7 @@
 package com.yantriks.urbandatacomparator.processor;
 
 import com.yantriks.urbandatacomparator.model.UrbanCsvData;
+import com.yantriks.urbandatacomparator.model.UrbanCsvOutputData;
 import com.yantriks.urbandatacomparator.sterlingapis.SterlingGetInvListCall;
 import com.yantriks.urbandatacomparator.sterlingapis.SterlingGetOrderListCall;
 import com.yantriks.urbandatacomparator.util.UrbanConstants;
@@ -22,8 +23,6 @@ public class UrbanDataCompareProcessor implements Processor {
     @Autowired
     SterlingGetOrderListCall sterlingGetOrderListCall;
 
-    @Autowired
-    YantriksUtil yantriksUtil;
 
     @Autowired
     UrbanToYantriksInvDirectUpdate urbanToYantriksInvDirectUpdate;
@@ -34,9 +33,14 @@ public class UrbanDataCompareProcessor implements Processor {
     @Autowired
     UrbanToYantriksCompareUpdate urbanToYantriksCompareUpdate;
 
+    @Autowired
+    YantriksUtil yantriksUtil;
+
+
     @Override
     public void process(Exchange exchange) throws Exception {
         UrbanCsvData csvData = exchange.getIn().getBody(UrbanCsvData.class);
+        UrbanCsvOutputData urbanCsvOutputData = new UrbanCsvOutputData();
         log.debug("UrbanDataCompareProcessor: CSV Data Input");
         log.debug("OrderId : "+csvData.getOrderId());
         log.debug("EnterpriseCode : "+csvData.getEnterpriseCode());
@@ -55,34 +59,73 @@ public class UrbanDataCompareProcessor implements Processor {
         Document getInventoryReservationList = sterlingGetInvListCall.executeGetInvListApi(reservationId);
         if (getInventoryReservationList.getDocumentElement().hasChildNodes()) {
             log.debug("UrbanDataCompareProcessor: Reservation exist in Sterling which means order is not created hence needs to be checked against yantriks");
-            //String reservationResponse = yantriksUtil.callYantriksGetOrDeleteAPI(reservationUrl.toString(), UrbanConstants.HTTP_METHOD_GET, UrbanConstants.V_PRODUCT_YAS);
-            String reservationResponse = "FAILURE";
+            String reservationResponse = null;
+            try {
+                reservationResponse  = yantriksUtil.callYantriksGetOrDeleteAPI(reservationUrl.toString(), UrbanConstants.HTTP_METHOD_GET, UrbanConstants.V_PRODUCT_YAS);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             if (UrbanConstants.V_FAILURE.equals(reservationResponse)) {
                 log.debug("UrbanDataCompareProcessor: Reservation does not exist hence creating a new one from inventory response");
-                urbanToYantriksInvDirectUpdate.directUpdateToYantriks(getInventoryReservationList);
+                urbanCsvOutputData = urbanToYantriksInvDirectUpdate.directUpdateToYantriks(getInventoryReservationList);
                 log.debug("UrbanDataCompareProcessor: directUpdateToInvYantriks : Done");
             } else {
                 log.debug("UrbanDataCompareProcessor: Comparing both reservation and getInventoryReservationList output, generating report or/and updating the yantriks");
-                urbanToYantriksCompareUpdate.compareReservationsAndUpdate(getInventoryReservationList, reservationResponse, false);
+                urbanCsvOutputData = urbanToYantriksCompareUpdate.compareReservationsAndUpdate(getInventoryReservationList, reservationResponse, false);
             }
         } else {
             log.debug("UrbanDataCompareProcessor: No Reservation found hence will check and call getOrderList ");
             if (isEmptyOrNull(orderId) || isEmptyOrNull(enterpriseCode)) {
                 log.error("UrbanDataCompareProcessor: Reservation Id was blank and either order is NA or enterprisecode is NA hence subsequent comparision can't be made");
-                log.error("There can be a possibility that soft reservation is expired or Order is created but orderid and enterprisecode is not passed")
+                log.error("There can be a possibility that soft reservation is expired or Order is created but orderid and enterprisecode is not passed");
             } else {
                 log.debug("UrbanDataCompareProcessor: Calling getOrderList API of sterling");
                 Document getOrderListOP = sterlingGetOrderListCall.executeGetOLListApi(orderId, enterpriseCode);
-                String reservationResponse = yantriksUtil.callYantriksGetOrDeleteAPI(reservationUrl.toString(), UrbanConstants.HTTP_METHOD_GET, UrbanConstants.V_PRODUCT_YAS);
-                if (UrbanConstants.V_FAILURE.equals(reservationResponse)) {
+                String reservationResponse = null;
+                try {
+                    reservationResponse = yantriksUtil.callYantriksGetOrDeleteAPI(reservationUrl.toString(), UrbanConstants.HTTP_METHOD_GET, UrbanConstants.V_PRODUCT_YAS);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                String response = yantriksUtil.determineErrorOrSuccessOnReservationPost(reservationResponse);
+                System.out.println("Response :: "+response);
+                if (UrbanConstants.V_FAILURE.equals(response)) {
                     log.debug("UrbanDataCompareProcessor: Yantriks does not have reservation hence based on getOrderList call output updating yantriks");
-                    urbanToYantriksOrderDirectUpdate.directUpdateToYantriks(getOrderListOP);
+                    urbanCsvOutputData = urbanToYantriksOrderDirectUpdate.directUpdateToYantriks(getOrderListOP);
                 } else {
                     log.debug("UrbanDataCompareProcessor: Comparing both reservation and getOrderList Output, generating report or/and updating the yantriks");
-                    urbanToYantriksCompareUpdate.compareReservationsAndUpdate(getOrderListOP, reservationResponse, false);
+                    urbanCsvOutputData = urbanToYantriksCompareUpdate.compareReservationsAndUpdate(getOrderListOP, reservationResponse, false);
                 }
             }
         }
+        log.info("UrbanDataCompareProcessor : Setting the output to be written to CSV");
+        StringBuilder csvWriteData = new StringBuilder();
+        if (urbanCsvOutputData.getExtnReservationId() != null || urbanCsvOutputData.getOrderId() != null) {
+            csvWriteData.append(urbanCsvOutputData.getOrderId());
+            csvWriteData.append("|");
+            csvWriteData.append(urbanCsvOutputData.getEnterpriseCode());
+            csvWriteData.append("|");
+            csvWriteData.append(urbanCsvOutputData.getExtnReservationId());
+            csvWriteData.append("|");
+            if (urbanCsvOutputData.isCompareAndGenerate()) {
+                csvWriteData.append(urbanCsvOutputData.getReservationStatus());
+            } else {
+                csvWriteData.append(urbanCsvOutputData.getReservationResponseCode());
+                csvWriteData.append("|");
+                csvWriteData.append(urbanCsvOutputData.getError());
+                csvWriteData.append("|");
+                csvWriteData.append(urbanCsvOutputData.getMessage());
+            }
+        } else {
+            csvWriteData.append(reservationId);
+            csvWriteData.append("|");
+            csvWriteData.append(enterpriseCode);
+            csvWriteData.append("|");
+            csvWriteData.append(orderId);
+            csvWriteData.append("|");
+            csvWriteData.append("DATA_INCORRECT");
+        }
+        exchange.getIn().setBody(csvWriteData.toString());
     }
 
     private boolean isEmptyOrNull(String str) {

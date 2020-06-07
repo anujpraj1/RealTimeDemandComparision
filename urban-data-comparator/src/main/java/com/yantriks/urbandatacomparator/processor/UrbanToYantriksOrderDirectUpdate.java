@@ -1,6 +1,7 @@
 package com.yantriks.urbandatacomparator.processor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sterlingcommerce.baseutil.SCXmlUtil;
 import com.yantriks.urbandatacomparator.model.*;
 import com.yantriks.urbandatacomparator.util.UrbanConstants;
 import com.yantriks.urbandatacomparator.util.YantriksUtil;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 @Component
 @Slf4j
@@ -31,33 +33,82 @@ public class UrbanToYantriksOrderDirectUpdate {
     @Autowired
     UrbanURI urbanURI;
 
-    public void directUpdateToYantriks(Document inDoc) {
+    @Autowired
+    UrbanCsvOutputData urbanCsvOutputData;
+
+
+    public UrbanCsvOutputData directUpdateToYantriks(Document inDoc) {
         YantriksReservationRequest yantriksReservationRequest = urbanPopulateOrderReservationRequest.createReservationRequestFromOrderListOP(inDoc);
+        System.out.println("OrderList XML :: "+SCXmlUtil.getString(inDoc));
+        Element eleRoot = inDoc.getDocumentElement();
+        Element eleOrder = SCXmlUtil.getChildElement(eleRoot, YantriksConstants.ORDER);
 
         if (compareAndGenerate) {
             log.debug("CompareAndGenerate Flag is turned on, Hence writing it into CSV file");
-            log.debug("Logging for now instead of writing in CSV :: " + yantriksReservationRequest.toString());
-        }
-        if (compareAndUpdate) {
+            log.debug("Logging for now instead of writing in CSV For Order :: " + yantriksReservationRequest.toString());
+            urbanCsvOutputData.setExtnReservationId(yantriksReservationRequest.getOrderId());
+            urbanCsvOutputData.setOrderId(eleOrder.getAttribute(YantriksConstants.ORDER_NO));
+            urbanCsvOutputData.setEnterpriseCode(eleOrder.getAttribute(YantriksConstants.A_ENTERPRISE_CODE));
+            urbanCsvOutputData.setCompareAndGenerate(true);
+            urbanCsvOutputData.setReservationStatus(UrbanConstants.RS_MISSING);
+        } else {
+            String transactionType = determineTransactionType(eleOrder);
             log.debug("CompareAndUpdate Flag is turned on, Hence calling yantriks api to update in Yantriks");
-            StringBuilder lineReserveUrl = new StringBuilder(UrbanConstants.YANTRIKS_LINE_RESERVE_URL);
-            lineReserveUrl = urbanURI.getReservationUrl(lineReserveUrl, UrbanConstants.SC_GLOBAL, UrbanConstants.TT_RESERVE,
-                    true, false, true, false);
+            StringBuilder reserveUrl = new StringBuilder(UrbanConstants.YANTRIKS_RESERVE_URL);
+            reserveUrl = urbanURI.getReservationUrl(reserveUrl, UrbanConstants.SC_GLOBAL, transactionType,
+                    true, false, true, true);
             try {
                 ObjectMapper jsonObjMapper = new ObjectMapper();
                 String httpBody = jsonObjMapper.writeValueAsString(yantriksReservationRequest);
                 log.debug("HttpBody :: " + httpBody);
-                String response = yantriksUtil.callYantriksAPI(lineReserveUrl.toString(), UrbanConstants.HTTP_METHOD_POST, httpBody, UrbanConstants.V_PRODUCT_YAS);
+                String response = yantriksUtil.callYantriksAPI(reserveUrl.toString(), UrbanConstants.HTTP_METHOD_POST, httpBody, UrbanConstants.V_PRODUCT_YAS);
                 if (YantriksConstants.V_FAILURE.equals(response)) {
                     log.debug("UrbanToYantriksOrderDirectUpdate: Yantriks Reservation Call failed with FAILURE response hence will write the request in file");
                     log.debug("UrbanToYantriksOrderDirectUpdate: Writing the request in file");
-
+                    urbanCsvOutputData.setExtnReservationId(yantriksReservationRequest.getOrderId());
+                    urbanCsvOutputData.setOrderId(eleOrder.getAttribute(YantriksConstants.ORDER_NO));
+                    urbanCsvOutputData.setEnterpriseCode(eleOrder.getAttribute(YantriksConstants.A_ENTERPRISE_CODE));
+                    urbanCsvOutputData.setCompareAndGenerate(false);
+                    urbanCsvOutputData.setReservationResponseCode(0);
+                    urbanCsvOutputData.setError("");
+                    urbanCsvOutputData.setMessage("");
+                } else {
+                    urbanCsvOutputData.setExtnReservationId(yantriksReservationRequest.getOrderId());
+                    urbanCsvOutputData.setOrderId(eleOrder.getAttribute(YantriksConstants.ORDER_NO));
+                    urbanCsvOutputData.setEnterpriseCode(eleOrder.getAttribute(YantriksConstants.A_ENTERPRISE_CODE));
+                    urbanCsvOutputData.setCompareAndGenerate(false);
+                    urbanCsvOutputData.setReservationResponseCode(UrbanConstants.RC_201);
+                    urbanCsvOutputData.setError("");
+                    urbanCsvOutputData.setMessage(UrbanConstants.MSG_SUCCESS);
                 }
             } catch (Exception e) {
                 log.error("UrbanToYantriksOrderDirectUpdate : Exception caught while creating reservation : " + e.getMessage());
                 log.debug("UrbanToYantriksOrderDirectUpdate: Writing the request in file");
-
+                urbanCsvOutputData.setExtnReservationId(yantriksReservationRequest.getOrderId());
+                urbanCsvOutputData.setOrderId(eleOrder.getAttribute(YantriksConstants.ORDER_NO));
+                urbanCsvOutputData.setEnterpriseCode(eleOrder.getAttribute(YantriksConstants.A_ENTERPRISE_CODE));
+                urbanCsvOutputData.setCompareAndGenerate(false);
+                urbanCsvOutputData.setReservationResponseCode(500);
+                urbanCsvOutputData.setError(UrbanConstants.ERR_YANT_SERVER_DOWN);
+                urbanCsvOutputData.setMessage("");
             }
+        }
+        return urbanCsvOutputData;
+    }
+
+
+    private String determineTransactionType(Element eleOrder) {
+        String maxOrderStatus = eleOrder.getAttribute(UrbanConstants.A_MAX_ORDER_STATUS);
+        if (UrbanConstants.IM_LIST_ALLOCATED_STATUSES.contains(maxOrderStatus)) {
+            return UrbanConstants.TT_RELEASE;
+        } else if (UrbanConstants.IM_LIST_SCHEDULED_STATUSES.contains(maxOrderStatus)) {
+            return UrbanConstants.TT_SCHEDULE;
+        } else if (UrbanConstants.IM_LIST_OPEN_STATUSES.contains(maxOrderStatus)) {
+            return UrbanConstants.TT_RESERVE;
+        } else if (UrbanConstants.IM_LIST_BACKORDER_STATUSES.contains(maxOrderStatus)) {
+            return UrbanConstants.TT_SCHEDULE;
+        } else {
+            return UrbanConstants.TT_RESERVE;
         }
     }
 }

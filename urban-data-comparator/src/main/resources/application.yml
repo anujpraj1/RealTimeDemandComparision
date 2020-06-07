@@ -2,6 +2,18 @@ server:
   port: 8060
 
 data:
+  input:
+    absolutedirectory: C:\tmp\in
+    filename: sample.csv
+    option:
+      noop: true
+      maxMessagesPerPoll: 1
+      delay: 1000
+  output:
+    absolutedirectory: C:\tmp\out
+    filename: outsample.csv
+    option:
+      fileexists: Append
   mode:
     comparegenerate: true
     compareupdate: false
@@ -27,11 +39,11 @@ urban:
     availabilityproduct: yas
     inventoryproduct: ilt
     masterdataproduct: ycs
-    protocol: http
+    protocol: https
     timeout: 1000
     availability:
-        host: localhost
-        port: 8080
+        host: staging-yantriks-api.urbncloud.com
+        port:
     inventorylite:
         host: localhost:8096
         port: 8096

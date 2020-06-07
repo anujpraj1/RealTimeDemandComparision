@@ -1,5 +1,6 @@
 package com.yantriks.urbandatacomparator.route;
 
+import com.yantriks.urbandatacomparator.model.UrbanCsvData;
 import com.yantriks.urbandatacomparator.processor.UrbanSedaMessageProcessor;
 import com.yantriks.urbandatacomparator.processor.UrbanDataCompareProcessor;
 import com.yantriks.urbandatacomparator.validation.UrbanConditionCheck;
@@ -29,6 +30,30 @@ public class UrbanCSVRoute extends RouteBuilder {
 
     @Value("${data.process.csvthreads}")
     private Integer csvthreads;
+
+    @Value("${data.input.absolutedirectory}")
+    private String absInDirectoryPath;
+
+    @Value("${data.output.absolutedirectory}")
+    private String absOPDirectoryPath;
+
+    @Value("${data.input.filename}")
+    private String inFileName;
+
+    @Value("${data.output.filename}")
+    private String outFileName;
+
+    @Value("${data.input.option.noop}")
+    private String optNoop;
+
+    @Value("${data.input.option.maxMessagesPerPoll}")
+    private String optMaxMessagesPerPoll;
+
+    @Value("${data.input.option.delay}")
+    private String optDelay;
+
+    @Value("${data.output.option.fileexists}")
+    private String optFileExists;
 
     @Autowired
     UrbanConditionCheck urbanConditionCheck;
@@ -85,7 +110,7 @@ public class UrbanCSVRoute extends RouteBuilder {
         from("direct:out").process(new SysOutProcessorA());*/
 
 
-        from("file:C:\\tmp\\in?noop=true&maxMessagesPerPoll=1&delay=5000")
+        from("file:C:\\tmp\\in?fileName=sample.csv&noop=true&maxMessagesPerPoll=1&delay=5000")
                 .unmarshal(csvDataFormat)
                 .split(body())
                 .streaming()
@@ -93,7 +118,10 @@ public class UrbanCSVRoute extends RouteBuilder {
                 .process(urbanSedaMessageProcessor)
                 .to(SEDA_END_POINT);
 
-        from(SEDA_END_POINT).threads(sedathreads).process(urbanDataCompareProcessor);
+        from(SEDA_END_POINT).threads(sedathreads).process(urbanDataCompareProcessor)
+        .transform(body().append("\n"))
+        .log("Processed Record ${body}")
+                .to("file:C:\\tmp\\out?fileName=outsample.csv&fileExist=Append");
 
     }
 }

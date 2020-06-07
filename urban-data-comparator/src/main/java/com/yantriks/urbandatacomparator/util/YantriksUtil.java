@@ -4,11 +4,12 @@ import com.sterlingcommerce.baseutil.SCXmlUtil;
 import com.yantra.yfc.core.YFCObject;
 import com.yantra.yfc.util.YFCCommon;
 import com.yantra.yfs.japi.YFSException;
+import com.yantriks.urbandatacomparator.model.UrbanCsvOutputData;
 import com.yantriks.urbandatacomparator.model.UrbanURI;
-import com.yantriks.urbandatacomparator.sterlingapis.SterlingGetOrderListCall;
-import com.yantriks.urbandatacomparator.sterlingapis.SterlingGetOrganizationListCall;
-import com.yantriks.yih.adapter.util.YantriksConstants;
+import com.yantriks.urbandatacomparator.sterlingapis.SterlingGetShipNodeListCall;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.json.JSONException;
+import org.apache.commons.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -39,7 +40,7 @@ public class YantriksUtil {
     UrbanURI urbanURI;
 
     @Autowired
-    SterlingGetOrganizationListCall sterlingGetOrganizationListCall;
+    SterlingGetShipNodeListCall sterlingGetOrganizationListCall;
 
 
     public String callYantriksGetOrDeleteAPI(String apiUrl, String httpMethod, String productToCall) {
@@ -85,6 +86,9 @@ public class YantriksUtil {
             conn.setDoInput(true);
             conn.setDoOutput(true);
             conn.setRequestMethod(httpMethod);
+            String strJWTToken = GenerateSignedJWTToken.getJWTTokenStr();
+            System.out.println("JWT TOKEN :: "+strJWTToken);
+            conn.setRequestProperty("Authorization", "Bearer  " + strJWTToken);
 
             if (!YFCCommon.isVoid(timeout)) {
                 conn.setConnectTimeout(timeout);
@@ -94,8 +98,16 @@ public class YantriksUtil {
                 log.debug("Output from Server ...." + conn.toString());
             }
             log.debug("Response Code Received :: "+conn.getResponseCode());
-            if (conn.getResponseCode() != 200) {
-                return UrbanConstants.V_FAILURE;
+            if (conn.getResponseCode() != 200 || conn.getResponseCode() != 201) {
+                log.info("We have not received response code as 200 or 201 hence will return the output from errorStream");
+                BufferedReader br = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+
+                String outputLine = null;
+                while ((outputLine = br.readLine()) != null) {
+                    outputStr = outputStr.concat(outputLine);
+                }
+                System.out.println("OuputSTR :: "+outputStr);
+                return "FAILURE";
             }
             BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 
@@ -176,7 +188,15 @@ public class YantriksUtil {
             }
             log.debug("Response Code Received :: "+conn.getResponseCode());
             if (conn.getResponseCode() != 200 || conn.getResponseCode() !=201) {
-                return UrbanConstants.V_FAILURE;
+                log.info("We have not received response code as 200 or 201 hence will return the output from errorStream");
+                BufferedReader br = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+
+                String outputLine = null;
+                while ((outputLine = br.readLine()) != null) {
+                    outputStr = outputStr.concat(outputLine);
+                }
+                System.out.println("OuputSTR :: "+outputStr);
+                return "FAILURE";
             }
             BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 
@@ -284,6 +304,22 @@ public class YantriksUtil {
             }
         } else {
             return ele.getAttribute(UrbanConstants.A_ORDER_NO);
+        }
+    }
+
+    public void setCSVOutput(UrbanCsvOutputData outputData, String extnReserveId,
+                             String orderId, String enterpriseCode, boolean isCompareAndGenerate,
+                             String reservationStatus, int reservationResponseCode, String error, String message) {
+
+    }
+
+    public String determineErrorOrSuccessOnReservationPost(String reservationRestCallOutput) throws JSONException {
+        JSONObject outputObj = new JSONObject(reservationRestCallOutput);
+        System.out.println("Output Object :: "+outputObj.toString());
+        if (outputObj.getInt("status") != 200 || outputObj.getInt("status") != 201) {
+            return "SUCCESS";
+        } else {
+            return "FAILURE";
         }
     }
 

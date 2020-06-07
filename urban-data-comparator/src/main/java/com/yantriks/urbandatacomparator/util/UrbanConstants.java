@@ -26,7 +26,7 @@ public class UrbanConstants {
     public static final String ELE_ORDER = "Order";
 
     public static final String TEMPLATE_GET_ORDER_LIST = "<OrderList>\n" +
-            "\t<Order OrderHeaderKey=\"\" OrderNo=\"\" >\n" +
+            "\t<Order OrderHeaderKey=\"\" OrderNo=\"\" EnterpriseCode=\"\">\n" +
             "\t<Extn ExtnReservationID=\"\" />\n" +
             "\t\t<OrderLines>\n" +
             "\t\t\t<OrderLine FulfillmentType=\"\" PrimeLineNo=\"\" DeliveryMethod=\"\" OrderedQty=\"\" ShipNode=\"\" ReqShipDate=\"\">\n" +
@@ -50,6 +50,9 @@ public class UrbanConstants {
             "\t</Order>\n" +
             "</OrderList>";
 
+    public static final String av = "<OrderList><Order OrderNo='' ><Extn ExtnReservationID='' /><OrderLines><OrderLine "
+            + "OrderLineKey='' PrimeLineNo='' /></OrderLines></Order></OrderList>";
+
     public static final String TEMPLATE_GET_ORGANIZATION_LIST = "<OrganizationList>\n" +
             "<Organization BusinessCalendarKey='' CatalogOrganizationCode='' InventoryOrganizationCode='' IsEnterprise='' IsNode=''\n" +
             "IsSeller='' LocaleCode='' OrganizationCode='' OrganizationName='' ParentOrganizationCode='' PrimaryEnterpriseKey='' CapacityOrganizationCode=''\n" +
@@ -67,6 +70,12 @@ public class UrbanConstants {
             "</Organization>\n" +
             "</OrganizationList>";
 
+    public static final String TEMPLATE_GET_SHIPNODE_LIST = "<ShipNodeList>\n" +
+            "<ShipNode NodeType=\"\">\n" +
+            "<Extn ExtnNodeClass=\"\"/>\n" +
+            "</ShipNode>\n" +
+            "</ShipNodeList>";
+
 
     public static final String V_DOCTYPE_0001 = "0001";
     public static final String V_PRODUCT_YAS = "yas";
@@ -77,12 +86,14 @@ public class UrbanConstants {
     public static final String HTTP_METHOD_GET = "GET";
     public static final String YANTRIKS_GET_RESERVE_URL = "/availability-services/reservations/v3.0";
     public static final String YANTRIKS_LINE_RESERVE_URL = "/availability-services/reservations/v3.0/lines";
+    public static final String YANTRIKS_RESERVE_URL = "/availability-services/reservations/v3.0/";
     public static final String V_FAILURE = "FAILURE";
     public static final String V_ORGID_URBN = "URBN";
 
     public static final String ELE_INV_RESERVATION = "InventoryReservation";
     public static final String ELE_ORGANIZATION = "Organization";
     public static final String A_ORGANIZATION_CODE = "OrganizationCode";
+    public static final String ELE_SHIPNODE = "ShipNode";
     public static final String A_RESERVATION_ID = "ReservationID";
     public static final String A_DELIVERY_METHOD = "DeliveryMethod";
     public static final String A_DEMAND_TYPE = "DemandType";
@@ -155,4 +166,15 @@ public class UrbanConstants {
     public static final ImmutableList<String> IM_LIST_OPEN_STATUSES = ImmutableList.of("1100");
     public static final ImmutableList<String> IM_LIST_SCHEDULED_STATUSES = ImmutableList.of("1500");
 
+    public static final String API_GET_SHIP_NODE_LIST = "getShipNodeList";
+
+    public static final String RS_MATCH = "MATCH";
+    public static final String RS_MISMATCH = "MISMATCH";
+    public static final String RS_MISSING = "MISSING";
+    public static final String ERR_YANT_SERVER_DOWN = "YANTRIKS_SERVER_DOWN";
+    public static final int RC_201 = 201;
+    public static final int RC_200 = 200;
+    public static final int RC_500 = 500;
+    public static final String MSG_SUCCESS = "SUCCESS";
+    public static final String A_MAX_ORDER_STATUS = "MaxOrderStatus";
 }
