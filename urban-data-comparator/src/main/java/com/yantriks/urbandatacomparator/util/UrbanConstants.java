@@ -25,7 +25,7 @@ public class UrbanConstants {
     public static final String API_GET_ORGANIZATION_LIST = "getOrganizationList";
     public static final String ELE_ORDER = "Order";
 
-    public static final String TEMPLATE_GET_ORDER_LIST = "<OrderList>\n" +
+    public static final String TEMPLATE_GET_ORDER_LIST = "<OrderList TotalOrderList=\"\">\n" +
             "\t<Order OrderHeaderKey=\"\" OrderNo=\"\" EnterpriseCode=\"\">\n" +
             "\t<Extn ExtnReservationID=\"\" />\n" +
             "\t\t<OrderLines>\n" +
@@ -86,8 +86,9 @@ public class UrbanConstants {
     public static final String HTTP_METHOD_GET = "GET";
     public static final String YANTRIKS_GET_RESERVE_URL = "/availability-services/reservations/v3.0";
     public static final String YANTRIKS_LINE_RESERVE_URL = "/availability-services/reservations/v3.0/lines";
-    public static final String YANTRIKS_RESERVE_URL = "/availability-services/reservations/v3.0/";
+    public static final String YANTRIKS_RESERVE_URL = "/availability-services/reservations/v3.0";
     public static final String V_FAILURE = "FAILURE";
+    public static final String V_EXC_FAILURE = "EXCEPTION_FAILURE";
     public static final String V_ORGID_URBN = "URBN";
 
     public static final String ELE_INV_RESERVATION = "InventoryReservation";

@@ -3,6 +3,7 @@ package com.yantriks.urbandatacomparator.processor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sterlingcommerce.baseutil.SCXmlUtil;
 import com.yantriks.urbandatacomparator.model.*;
+import com.yantriks.urbandatacomparator.model.responses.YantriksAvailabilityErrorResponse;
 import com.yantriks.urbandatacomparator.util.UrbanConstants;
 import com.yantriks.urbandatacomparator.util.YantriksUtil;
 import com.yantriks.urbandatacomparator.validation.UrbanPopulateOrderReservationRequest;
@@ -52,45 +53,84 @@ public class UrbanToYantriksOrderDirectUpdate {
             urbanCsvOutputData.setCompareAndGenerate(true);
             urbanCsvOutputData.setReservationStatus(UrbanConstants.RS_MISSING);
         } else {
-            String transactionType = determineTransactionType(eleOrder);
-            log.debug("CompareAndUpdate Flag is turned on, Hence calling yantriks api to update in Yantriks");
-            StringBuilder reserveUrl = new StringBuilder(UrbanConstants.YANTRIKS_RESERVE_URL);
-            reserveUrl = urbanURI.getReservationUrl(reserveUrl, UrbanConstants.SC_GLOBAL, transactionType,
-                    true, false, true, true);
-            try {
-                ObjectMapper jsonObjMapper = new ObjectMapper();
-                String httpBody = jsonObjMapper.writeValueAsString(yantriksReservationRequest);
-                log.debug("HttpBody :: " + httpBody);
-                String response = yantriksUtil.callYantriksAPI(reserveUrl.toString(), UrbanConstants.HTTP_METHOD_POST, httpBody, UrbanConstants.V_PRODUCT_YAS);
-                if (YantriksConstants.V_FAILURE.equals(response)) {
-                    log.debug("UrbanToYantriksOrderDirectUpdate: Yantriks Reservation Call failed with FAILURE response hence will write the request in file");
+            if (yantriksReservationRequest.getLineReservationDetails().isEmpty()) {
+                log.info("UrbanToYantriksOrderDirectUpdate: Line Reservation Details are empty hence not calling Yantriks API");
+                urbanCsvOutputData.setExtnReservationId(yantriksReservationRequest.getOrderId());
+                urbanCsvOutputData.setOrderId(eleOrder.getAttribute(YantriksConstants.ORDER_NO));
+                urbanCsvOutputData.setEnterpriseCode(eleOrder.getAttribute(YantriksConstants.A_ENTERPRISE_CODE));
+                urbanCsvOutputData.setCompareAndGenerate(true);
+                urbanCsvOutputData.setReservationStatus("STATUSES_OUT_OF_RESERVATION");
+            } else {
+                String transactionType = determineTransactionType(eleOrder);
+                log.debug("CompareAndUpdate Flag is turned on, Hence calling yantriks api to update in Yantriks");
+                StringBuilder reserveUrl = new StringBuilder(UrbanConstants.YANTRIKS_RESERVE_URL);
+                reserveUrl = urbanURI.getReservationUrl(reserveUrl, UrbanConstants.SC_GLOBAL, transactionType,
+                        true, false, true, true);
+                try {
+                    ObjectMapper jsonObjMapper = new ObjectMapper();
+                    String httpBody = jsonObjMapper.writeValueAsString(yantriksReservationRequest);
+                    log.debug("HttpBody :: " + httpBody);
+                    log.debug("Reserve URL :: "+reserveUrl);
+                    //String reservationResponse = yantriksUtil.callYantriksAPI(reserveUrl.toString(), UrbanConstants.HTTP_METHOD_POST, httpBody, UrbanConstants.V_PRODUCT_YAS);
+                    String reservationResponse = "{\n" +
+                            "    \"path\": \"/availability-services/reservations/v3.0/GLOBAL/oms-reserve\",\n" +
+                            "    \"errorLines\": [\n" +
+                            "        {\n" +
+                            "            \"lineId\": \"1\",\n" +
+                            "            \"locations\": [\n" +
+                            "                {\n" +
+                            "                    \"locationKey\": {\n" +
+                            "                        \"locationId\": \"NETWORK\",\n" +
+                            "                        \"locationType\": \"NETWORK\"\n" +
+                            "                    },\n" +
+                            "                    \"errors\": [\n" +
+                            "                        {\n" +
+                            "                            \"message\": \"NOT_ENOUGH_ATP\",\n" +
+                            "                            \"shortageQty\": 487.0\n" +
+                            "                        }\n" +
+                            "                    ]\n" +
+                            "                }\n" +
+                            "            ]\n" +
+                            "        }\n" +
+                            "    ],\n" +
+                            "    \"error\": \"BAD_REQUEST\",\n" +
+                            "    \"message\": \"NOT_ENOUGH_ATP\",\n" +
+                            "    \"status\": 400,\n" +
+                            "    \"timestamp\": \"2020-06-08T11:03:31.21Z\"\n" +
+                            "}";
+                    String response = yantriksUtil.determineErrorOrSuccessOnReservationPost(reservationResponse);
+                    if (YantriksConstants.V_FAILURE.equals(response)) {
+                        log.debug("UrbanToYantriksOrderDirectUpdate: Yantriks Reservation Call failed with FAILURE response hence will write the request in file");
+                        log.debug("UrbanToYantriksOrderDirectUpdate: Writing the request in file");
+                        ObjectMapper objOut = new ObjectMapper();
+                        YantriksAvailabilityErrorResponse yantriksAvailabilityErrorResponse = objOut.readValue(reservationResponse, YantriksAvailabilityErrorResponse.class);
+                        urbanCsvOutputData.setExtnReservationId(yantriksReservationRequest.getOrderId());
+                        urbanCsvOutputData.setOrderId(eleOrder.getAttribute(YantriksConstants.ORDER_NO));
+                        urbanCsvOutputData.setEnterpriseCode(eleOrder.getAttribute(YantriksConstants.A_ENTERPRISE_CODE));
+                        urbanCsvOutputData.setCompareAndGenerate(false);
+                        urbanCsvOutputData.setReservationResponseCode(yantriksAvailabilityErrorResponse.getStatus());
+                        urbanCsvOutputData.setError(yantriksAvailabilityErrorResponse.getError());
+                        urbanCsvOutputData.setMessage(yantriksAvailabilityErrorResponse.getMessage());
+                    } else {
+                        urbanCsvOutputData.setExtnReservationId(yantriksReservationRequest.getOrderId());
+                        urbanCsvOutputData.setOrderId(eleOrder.getAttribute(YantriksConstants.ORDER_NO));
+                        urbanCsvOutputData.setEnterpriseCode(eleOrder.getAttribute(YantriksConstants.A_ENTERPRISE_CODE));
+                        urbanCsvOutputData.setCompareAndGenerate(false);
+                        urbanCsvOutputData.setReservationResponseCode(UrbanConstants.RC_201);
+                        urbanCsvOutputData.setError("");
+                        urbanCsvOutputData.setMessage(UrbanConstants.MSG_SUCCESS);
+                    }
+                } catch (Exception e) {
+                    log.error("UrbanToYantriksOrderDirectUpdate : Exception caught while creating reservation : " + e.getMessage());
                     log.debug("UrbanToYantriksOrderDirectUpdate: Writing the request in file");
                     urbanCsvOutputData.setExtnReservationId(yantriksReservationRequest.getOrderId());
                     urbanCsvOutputData.setOrderId(eleOrder.getAttribute(YantriksConstants.ORDER_NO));
                     urbanCsvOutputData.setEnterpriseCode(eleOrder.getAttribute(YantriksConstants.A_ENTERPRISE_CODE));
                     urbanCsvOutputData.setCompareAndGenerate(false);
-                    urbanCsvOutputData.setReservationResponseCode(0);
-                    urbanCsvOutputData.setError("");
+                    urbanCsvOutputData.setReservationResponseCode(500);
+                    urbanCsvOutputData.setError(UrbanConstants.ERR_YANT_SERVER_DOWN);
                     urbanCsvOutputData.setMessage("");
-                } else {
-                    urbanCsvOutputData.setExtnReservationId(yantriksReservationRequest.getOrderId());
-                    urbanCsvOutputData.setOrderId(eleOrder.getAttribute(YantriksConstants.ORDER_NO));
-                    urbanCsvOutputData.setEnterpriseCode(eleOrder.getAttribute(YantriksConstants.A_ENTERPRISE_CODE));
-                    urbanCsvOutputData.setCompareAndGenerate(false);
-                    urbanCsvOutputData.setReservationResponseCode(UrbanConstants.RC_201);
-                    urbanCsvOutputData.setError("");
-                    urbanCsvOutputData.setMessage(UrbanConstants.MSG_SUCCESS);
                 }
-            } catch (Exception e) {
-                log.error("UrbanToYantriksOrderDirectUpdate : Exception caught while creating reservation : " + e.getMessage());
-                log.debug("UrbanToYantriksOrderDirectUpdate: Writing the request in file");
-                urbanCsvOutputData.setExtnReservationId(yantriksReservationRequest.getOrderId());
-                urbanCsvOutputData.setOrderId(eleOrder.getAttribute(YantriksConstants.ORDER_NO));
-                urbanCsvOutputData.setEnterpriseCode(eleOrder.getAttribute(YantriksConstants.A_ENTERPRISE_CODE));
-                urbanCsvOutputData.setCompareAndGenerate(false);
-                urbanCsvOutputData.setReservationResponseCode(500);
-                urbanCsvOutputData.setError(UrbanConstants.ERR_YANT_SERVER_DOWN);
-                urbanCsvOutputData.setMessage("");
             }
         }
         return urbanCsvOutputData;

@@ -1,6 +1,5 @@
 package com.yantriks.urbandatacomparator.route;
 
-import com.yantriks.urbandatacomparator.model.UrbanCsvData;
 import com.yantriks.urbandatacomparator.processor.UrbanSedaMessageProcessor;
 import com.yantriks.urbandatacomparator.processor.UrbanDataCompareProcessor;
 import com.yantriks.urbandatacomparator.validation.UrbanConditionCheck;
@@ -16,8 +15,6 @@ import java.util.concurrent.Executors;
 @Component
 @Slf4j
 public class UrbanCSVRoute extends RouteBuilder {
-
-    private static String SEDA_END_POINT = "seda:datacomparequeue";
 
     @Value("${data.mode.comparegenerate}")
     private Boolean actionMode;
@@ -55,6 +52,9 @@ public class UrbanCSVRoute extends RouteBuilder {
     @Value("${data.output.option.fileexists}")
     private String optFileExists;
 
+    @Value("${seda.queue}")
+    private String sedaQueue;
+
     @Autowired
     UrbanConditionCheck urbanConditionCheck;
 
@@ -67,50 +67,27 @@ public class UrbanCSVRoute extends RouteBuilder {
     @Override
     public void configure() throws Exception {
 
+        String inputFileURI = getAbsFileURIPath(absInDirectoryPath) + getInputQueryParams();
+        String outputFileURI = getAbsFileURIPath(absInDirectoryPath) + getOutputQueryParams();
+
+        String SEDA_END_POINT = getSedaUri(sedaQueue);
+
         onCompletion().process(exchange -> {
-            System.out.println("Success" + exchange.getIn().getBody());
+            log.debug("Success Response for " + exchange.getIn().getBody());
         });
         onException().process(exchange -> {
-            System.out.println("Error is :" + exchange.getIn().getBody());
+            log.error("Error Received for " + exchange.getIn().getBody());
         });
 
         CsvDataFormat csvDataFormat = new CsvDataFormat();
         csvDataFormat.setLazyLoad(true);
         csvDataFormat.setSkipHeaderRecord(skipHeader);
-        System.out.println("DATA MODE :: "+actionMode);
-        urbanConditionCheck.setActionMode(actionMode);
 
-        log.info("Data Mode Log Level :: "+actionMode);
-        log.debug("Data Mode Log Level :: "+actionMode);
-        log.error("Error mode");
-        log.warn("Error mode Warning");
+        log.debug("Here First");
 
+        //String fileUri = absInDirectoryPath+"?fileName="+inFileName+"&noop"+optNoop+"&maxMessagesPerPoll="+optMaxMessagesPerPoll+"&delay="+optDelay;
 
-        /*from("file:/home/YANTRIKS/anuj.kumar/YantriksStuff/csvdir/input?noop=true&maxMessagesPerPoll=1&delay=5000")
-                .unmarshal(csvDataFormat)
-                .split(body())
-                .streaming()
-                .executorService(Executors.newFixedThreadPool(3))
-                //.to("file:/home/YANTRIKS/anuj.kumar/YantriksStuff/csvdir/output");
-                .choice()
-                .when(method(urbanConditionCheck, "isActionModeCompareAndUpdate"))
-                .process(new UrbanDataCompareProcessor())
-                //.transform(body().append("\n"))
-                .to(SEDA_END_POINT)
-                .otherwise()
-                .process(new UrbanDataCompareProcessor())
-                .to("file:/home/YANTRIKS/anuj.kumar/YantriksStuff/csvdir/output?fileExist=Append")
-                .end();*/
-
-        /*from("file:C:\\tmp\\in?noop=true&maxMessagesPerPoll=1&delay=5000").threads(5).process(new UrbanSedaMessageProcessor())
-                .setHeader(Exchange.HTTP_METHOD, simple("GET"))
-                .setHeader(Exchange.CONTENT_TYPE, constant("application/json")).to("http://localhost:8096/inventory-services/supply-type/ORG001")
-                .to("direct:restresponse");
-        from("direct:restresponse").process(new SysOutProcessorA()).to("direct:out");
-        from("direct:out").process(new SysOutProcessorA());*/
-
-
-        from("file:C:\\tmp\\in?fileName=sample.csv&noop=true&maxMessagesPerPoll=1&delay=5000")
+        from(inputFileURI)
                 .unmarshal(csvDataFormat)
                 .split(body())
                 .streaming()
@@ -119,9 +96,42 @@ public class UrbanCSVRoute extends RouteBuilder {
                 .to(SEDA_END_POINT);
 
         from(SEDA_END_POINT).threads(sedathreads).process(urbanDataCompareProcessor)
-        .transform(body().append("\n"))
-        .log("Processed Record ${body}")
-                .to("file:C:\\tmp\\out?fileName=outsample.csv&fileExist=Append");
+                .transform(body().append("\n"))
+                .log("Processed Record ${body}")
+                .to(outputFileURI);
 
     }
+
+    private String getInputQueryParams() {
+        StringBuilder sbFileUri = new StringBuilder();
+        sbFileUri.append("?fileName=");
+        sbFileUri.append(inFileName);
+        sbFileUri.append("&noop=");
+        sbFileUri.append(optNoop);
+        sbFileUri.append("&maxMessagesPerPoll=");
+        sbFileUri.append(optMaxMessagesPerPoll);
+        sbFileUri.append("&delay=");
+        sbFileUri.append(optDelay);
+
+        return sbFileUri.toString();
+    }
+
+    private String getOutputQueryParams() {
+        StringBuilder sbFileUri = new StringBuilder();
+        sbFileUri.append("?fileName=");
+        sbFileUri.append(outFileName);
+        sbFileUri.append("&fileExist=");
+        sbFileUri.append(optFileExists);
+
+        return sbFileUri.toString();
+    }
+
+    private String getAbsFileURIPath(String absDirectoryPath) {
+        return "file:" + absDirectoryPath;
+    }
+
+    private String getSedaUri(String sedaQueue) {
+        return "seda:" + sedaQueue;
+    }
+
 }

@@ -36,6 +36,7 @@ public class SterlingGetInvListCall {
 		Map<String, String> map = new HashMap<String, String>();
 		System.out.println("Inside Here");
 		System.out.println("Inside Here now");
+		System.out.println("Sterling URI :: "+urbanURI.getSterlingURL());
 		map.put(UrbanConstants.CONST_YIF_HTTP_API_URL, urbanURI.getSterlingURL());
 		XApi api = XApiClientFactory.getInstance().getApi(UrbanConstants.CONST_CAPS_HTTP, map);
 		

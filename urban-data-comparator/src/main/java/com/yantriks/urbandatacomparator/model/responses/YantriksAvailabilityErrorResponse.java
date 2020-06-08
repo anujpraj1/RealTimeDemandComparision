@@ -20,6 +20,6 @@ public class YantriksAvailabilityErrorResponse {
     private List<YantriksErrorLineResponse> errorLines;
     private String error;
     private String message;
-    private String status;
+    private long status;
     private String timestamp;
 }

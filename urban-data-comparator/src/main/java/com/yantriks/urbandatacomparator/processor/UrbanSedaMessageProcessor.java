@@ -19,9 +19,9 @@ public class UrbanSedaMessageProcessor implements Processor {
         log.debug("UrbanSedaMessageProcessor: Input to UrbanSedaMessageProcessor"+exchange.getIn().getBody());
         log.debug("UrbanSedaMessageProcessor: Current Thread : "+Thread.currentThread());
         UrbanCsvData urbanCsvData = new UrbanCsvData();
-        urbanCsvData.setOrderId(inputList.get(0).trim());
+        urbanCsvData.setReservationId(inputList.get(0).trim());
         urbanCsvData.setEnterpriseCode(inputList.get(1).trim());
-        urbanCsvData.setReservationId(inputList.get(2).trim());
+        urbanCsvData.setOrderId(inputList.get(2).trim());
         log.debug("UrbanSedaMessageProcessor: Sending the Data : "+urbanCsvData.toString());
         exchange.getIn().setBody(urbanCsvData);
     }

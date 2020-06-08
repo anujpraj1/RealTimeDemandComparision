@@ -7,6 +7,7 @@ import com.yantra.yfs.japi.YFSException;
 import com.yantriks.urbandatacomparator.model.UrbanCsvOutputData;
 import com.yantriks.urbandatacomparator.model.UrbanURI;
 import com.yantriks.urbandatacomparator.sterlingapis.SterlingGetShipNodeListCall;
+import com.yantriks.yih.adapter.util.YantriksConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.json.JSONException;
 import org.apache.commons.json.JSONObject;
@@ -90,6 +91,7 @@ public class YantriksUtil {
             System.out.println("JWT TOKEN :: "+strJWTToken);
             conn.setRequestProperty("Authorization", "Bearer  " + strJWTToken);
 
+            System.out.println("Time Out :: "+timeout);
             if (!YFCCommon.isVoid(timeout)) {
                 conn.setConnectTimeout(timeout);
             }
@@ -133,8 +135,8 @@ public class YantriksUtil {
 
     public String callYantriksAPI(String apiUrl, String httpMethod, String body, String productToCall) {
         //log.beginTimer("callYantriksGetOrDeleteAPI");
-        log.debug("YantriksUtil: callYantriksGetOrDeleteAPI API :URL for call yantriks API :: "+apiUrl);
-        log.debug("YantriksUtil: callYantriksGetOrDeleteAPI : Http Method :: "+httpMethod);
+        log.debug("YantriksUtil: callYantriksAPI API :URL for call yantriks API :: "+apiUrl);
+        log.debug("YantriksUtil: callYantriksAPI : Http Method :: "+httpMethod);
         if ((YFCCommon.isVoid(httpMethod)) || (YFCCommon.isVoid(apiUrl))) {
             if (log.isDebugEnabled())
                 log.debug("Mandatory parameters are missing");
@@ -165,7 +167,7 @@ public class YantriksUtil {
 
 
             if (log.isDebugEnabled())
-                log.debug("YantriksUtil: callYantriksGetOrDeleteAPI: URL is:" + url.toString());
+                log.debug("YantriksUtil: callYantriksAPI: URL is:" + url.toString());
 
 
             long startTime = System.currentTimeMillis();
@@ -196,7 +198,7 @@ public class YantriksUtil {
                     outputStr = outputStr.concat(outputLine);
                 }
                 System.out.println("OuputSTR :: "+outputStr);
-                return "FAILURE";
+                return outputStr;
             }
             BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 
@@ -222,7 +224,7 @@ public class YantriksUtil {
     public String getLocationType(String locationId) throws Exception {
         Document orgList = sterlingGetOrganizationListCall.executeGetOrganizationListCall(locationId);
         Element eleOrganization = SCXmlUtil.getChildElement(orgList.getDocumentElement(), UrbanConstants.ELE_ORGANIZATION);
-        Element eleNode = SCXmlUtil.getChildElement(eleOrganization, UrbanConstants.NODE);
+        Element eleNode = SCXmlUtil.getChildElement(eleOrganization, UrbanConstants.A_SHIP_NODE);
         if (!YFCObject.isVoid(eleNode)) {
             String nodeType = eleNode.getAttribute(UrbanConstants.NODE_TYPE);
             Element extnNode = SCXmlUtil.getChildElement(eleNode, UrbanConstants.ELE_EXTN);
@@ -314,13 +316,29 @@ public class YantriksUtil {
     }
 
     public String determineErrorOrSuccessOnReservationPost(String reservationRestCallOutput) throws JSONException {
-        JSONObject outputObj = new JSONObject(reservationRestCallOutput);
-        System.out.println("Output Object :: "+outputObj.toString());
-        if (outputObj.getInt("status") != 200 || outputObj.getInt("status") != 201) {
-            return "SUCCESS";
+        if (reservationRestCallOutput.equals("")) {
+            return UrbanConstants.V_FAILURE;
+        } else if (UrbanConstants.V_EXC_FAILURE.equals(reservationRestCallOutput)) {
+            return UrbanConstants.V_EXC_FAILURE;
         } else {
-            return "FAILURE";
+            JSONObject outputObj = new JSONObject(reservationRestCallOutput);
+            System.out.println("Output Object :: "+outputObj.toString());
+            System.out.println("*******"+outputObj.containsKey("status"));
+            if (!outputObj.containsKey("status")) {
+                return "SUCCESS";
+            } else {
+                return UrbanConstants.V_FAILURE;
+            }
         }
     }
 
+    public void defaultDataToPopulate(StringBuilder csvWriteData, String reservationId, String enterpriseCode, String orderId, String errorResponse) {
+        csvWriteData.append(reservationId);
+        csvWriteData.append("|");
+        csvWriteData.append(enterpriseCode);
+        csvWriteData.append("|");
+        csvWriteData.append(orderId);
+        csvWriteData.append("|");
+        csvWriteData.append(errorResponse);
+    }
 }

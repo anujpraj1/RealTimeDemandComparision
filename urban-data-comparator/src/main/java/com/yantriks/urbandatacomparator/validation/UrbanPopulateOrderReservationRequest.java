@@ -94,6 +94,8 @@ public class UrbanPopulateOrderReservationRequest {
                         List<Element> scheduleList = new ArrayList<>();
                         currSchedule.setAttribute(UrbanConstants.A_STATUS, statusFromMap);
                         scheduleList.add(currSchedule);
+                        System.out.println("SHIP Node :: "+shipNode);
+                        System.out.println("Schedule :: "+SCXmlUtil.getString(currSchedule));
                         shipNodeToSchedule.put(shipNode, scheduleList);
                     }
                 }
@@ -120,6 +122,8 @@ public class UrbanPopulateOrderReservationRequest {
                                                 .reservationDate(element.getAttribute(UrbanConstants.A_EXP_SHIP_DATE).substring(0, 10))
                                                 .segment(segment)
                                                 .build();
+                                        System.out.println("Current Demand Adding :: "+yantriksReservationDemandTypeRequest.toString());
+                                        System.out.println("Current Demand Adding :: "+yantriksReservationDemandTypeRequest);
                                         reservationDemandTypeRequests.add(yantriksReservationDemandTypeRequest);
                                     } else {
                                         log.debug("Status found : " + statusOfDemand + " Hence did not create a demand for it");
@@ -128,14 +132,17 @@ public class UrbanPopulateOrderReservationRequest {
                         YantriksLocationReservationDetailsRequest yantriksLocationReservationDetailsRequest = null;
                         try {
                             yantriksLocationReservationDetailsRequest = YantriksLocationReservationDetailsRequest.builder()
-                                    .locationId(e.getKey())
-                                    .locationType(yantriksUtil.getLocationType(e.getKey()))
+                                    .locationId(e.getKey().equals("")?"NETWORK":e.getKey())
+                                    .locationType(e.getKey().equals("")?"NETWORK":yantriksUtil.getLocationType(e.getKey()))
                                     .demands(reservationDemandTypeRequests)
                                     .build();
                         } catch (Exception ex) {
                             log.error("Exception Caught while determining the location type : " + ex.getMessage());
                         }
-                        locationReservationDetailsRequests.add(yantriksLocationReservationDetailsRequest);
+                        System.out.println("EMPTY CHECK FOR DEMAND "+reservationDemandTypeRequests.isEmpty());
+                        if (!reservationDemandTypeRequests.isEmpty()) {
+                            locationReservationDetailsRequests.add(yantriksLocationReservationDetailsRequest);
+                        }
                     });
             YantriksLineReservationDetailsRequest yantriksLineReservationDetailsRequest = YantriksLineReservationDetailsRequest.builder()
                     .fulfillmentService(fulfillmentService)
@@ -145,7 +152,10 @@ public class UrbanPopulateOrderReservationRequest {
                     .uom(eleItem.getAttribute(UrbanConstants.A_UOM))
                     .locationReservationDetails(locationReservationDetailsRequests)
                     .build();
-            lineReservationDetailsRequests.add(yantriksLineReservationDetailsRequest);
+            System.out.println("EMPTY CHECK FOR LOCATION "+locationReservationDetailsRequests.isEmpty());
+            if (!locationReservationDetailsRequests.isEmpty()) {
+                lineReservationDetailsRequests.add(yantriksLineReservationDetailsRequest);
+            }
         }
 
         SimpleDateFormat updateTimeFormatter = new SimpleDateFormat(

@@ -15,8 +15,8 @@ data:
     option:
       fileexists: Append
   mode:
-    comparegenerate: true
-    compareupdate: false
+    comparegenerate: false
+    compareupdate: true
   upload:
     input:
       skipHeader: true
@@ -40,7 +40,7 @@ urban:
     inventoryproduct: ilt
     masterdataproduct: ycs
     protocol: https
-    timeout: 1000
+    timeout: 3000
     availability:
         host: staging-yantriks-api.urbncloud.com
         port:
@@ -56,3 +56,10 @@ yantriks:
     orgid: URBN
     fulfillmentservice: STANDARD
     segment: DEFAULT
+
+graceful:
+  shutdown:
+    timeoutinseconds: 300
+
+seda:
+  queue: urbandatacompare

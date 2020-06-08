@@ -18,6 +18,7 @@ public class YantriksLineReservationDetailsRequest {
     private String lineId;
     private String productId;
     private String uom;
+    private String orderLineRef;
     private List<YantriksLocationReservationDetailsRequest> locationReservationDetails;
 
 }

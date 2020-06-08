@@ -19,7 +19,7 @@ public class UrbanCsvOutputData {
 
     private String reservationStatus;
 
-    private int reservationResponseCode;
+    private long reservationResponseCode;
 
     private String error;
 

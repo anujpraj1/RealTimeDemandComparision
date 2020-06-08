@@ -41,13 +41,15 @@ public class UrbanDataCompareProcessor implements Processor {
     public void process(Exchange exchange) throws Exception {
         UrbanCsvData csvData = exchange.getIn().getBody(UrbanCsvData.class);
         UrbanCsvOutputData urbanCsvOutputData = new UrbanCsvOutputData();
+        StringBuilder csvWriteData = new StringBuilder();
         log.debug("UrbanDataCompareProcessor: CSV Data Input");
-        log.debug("OrderId : "+csvData.getOrderId());
-        log.debug("EnterpriseCode : "+csvData.getEnterpriseCode());
-        log.debug("ReservationId : "+csvData.getReservationId());
+        log.debug("OrderId : " + csvData.getOrderId());
+        log.debug("EnterpriseCode : " + csvData.getEnterpriseCode());
+        log.debug("ReservationId : " + csvData.getReservationId());
         String orderId = csvData.getOrderId();
         String enterpriseCode = csvData.getEnterpriseCode();
         String reservationId = csvData.getReservationId();
+        boolean populatedOnce = false;
 
         StringBuilder reservationUrl = new StringBuilder(UrbanConstants.YANTRIKS_GET_RESERVE_URL);
         reservationUrl.append("/");
@@ -61,17 +63,68 @@ public class UrbanDataCompareProcessor implements Processor {
             log.debug("UrbanDataCompareProcessor: Reservation exist in Sterling which means order is not created hence needs to be checked against yantriks");
             String reservationResponse = null;
             try {
-                reservationResponse  = yantriksUtil.callYantriksGetOrDeleteAPI(reservationUrl.toString(), UrbanConstants.HTTP_METHOD_GET, UrbanConstants.V_PRODUCT_YAS);
+                //reservationResponse = yantriksUtil.callYantriksGetOrDeleteAPI(reservationUrl.toString(), UrbanConstants.HTTP_METHOD_GET, UrbanConstants.V_PRODUCT_YAS);
+                reservationResponse = "{\n" +
+                        "    \"updateTime\": \"2020-06-08T18:25:16.790Z\",\n" +
+                        "    \"updateUser\": \"RTURBNUSER\",\n" +
+                        "    \"orgId\": \"URBN\",\n" +
+                        "    \"expirationTime\": \"2500-01-01T06:12:22.107\",\n" +
+                        "    \"expirationTimeUnit\": \"HOURS\",\n" +
+                        "    \"orderId\": \"Something_TEST\",\n" +
+                        "    \"orderType\": null,\n" +
+                        "    \"lineReservationDetails\": [\n" +
+                        "        {\n" +
+                        "            \"lineId\": \"1\",\n" +
+                        "            \"fulfillmentService\": \"STANDARD\",\n" +
+                        "            \"fulfillmentType\": \"Ship\",\n" +
+                        "            \"orderLineRef\": null,\n" +
+                        "            \"productId\": \"TEST_ITEM\",\n" +
+                        "            \"uom\": \"TEST\",\n" +
+                        "            \"locationReservationDetails\": [\n" +
+                        "                {\n" +
+                        "                    \"locationId\": \"TEST_NODE\",\n" +
+                        "                    \"locationType\": null,\n" +
+                        "                    \"demands\": [\n" +
+                        "                        {\n" +
+                        "                            \"demandType\": \"RESERVED\",\n" +
+                        "                            \"reservationDate\": \"2020-06-11\",\n" +
+                        "                            \"segment\": \"DEFAULT\",\n" +
+                        "                            \"quantity\": 2.0\n" +
+                        "                        }\n" +
+                        "                    ]\n" +
+                        "                },\n" +
+                        "                {\n" +
+                        "                    \"locationId\": \"TEST_NODE_NO_INVENTORY\",\n" +
+                        "                    \"locationType\": null,\n" +
+                        "                    \"demands\": [\n" +
+                        "                        {\n" +
+                        "                            \"demandType\": \"RESERVED\",\n" +
+                        "                            \"reservationDate\": \"2020-06-12\",\n" +
+                        "                            \"segment\": \"DEFAULT\",\n" +
+                        "                            \"quantity\": 2.0\n" +
+                        "                        }\n" +
+                        "                    ]\n" +
+                        "                }\n" +
+                        "            ]\n" +
+                        "        }\n" +
+                        "    ]\n" +
+                        "}";
             } catch (Exception e) {
                 e.printStackTrace();
+                reservationResponse = UrbanConstants.V_EXC_FAILURE;
             }
-            if (UrbanConstants.V_FAILURE.equals(reservationResponse)) {
+            String response = yantriksUtil.determineErrorOrSuccessOnReservationPost(reservationResponse);
+            if (UrbanConstants.V_FAILURE.equals(response)) {
                 log.debug("UrbanDataCompareProcessor: Reservation does not exist hence creating a new one from inventory response");
                 urbanCsvOutputData = urbanToYantriksInvDirectUpdate.directUpdateToYantriks(getInventoryReservationList);
                 log.debug("UrbanDataCompareProcessor: directUpdateToInvYantriks : Done");
+            } else if (UrbanConstants.V_EXC_FAILURE.equals(response)) {
+                log.debug("UrbanDataCompareProcessor :: Yantriks API failed with Exception hence will set the data to write in CSV");
+                yantriksUtil.defaultDataToPopulate(csvWriteData, reservationId, enterpriseCode, orderId, "GET_RESERVATION_FAILED");
+                populatedOnce = true;
             } else {
                 log.debug("UrbanDataCompareProcessor: Comparing both reservation and getInventoryReservationList output, generating report or/and updating the yantriks");
-                urbanCsvOutputData = urbanToYantriksCompareUpdate.compareReservationsAndUpdate(getInventoryReservationList, reservationResponse, false);
+                urbanCsvOutputData = urbanToYantriksCompareUpdate.compareReservationsAndUpdate(getInventoryReservationList, reservationResponse, true);
             }
         } else {
             log.debug("UrbanDataCompareProcessor: No Reservation found hence will check and call getOrderList ");
@@ -83,15 +136,54 @@ public class UrbanDataCompareProcessor implements Processor {
                 Document getOrderListOP = sterlingGetOrderListCall.executeGetOLListApi(orderId, enterpriseCode);
                 String reservationResponse = null;
                 try {
-                    reservationResponse = yantriksUtil.callYantriksGetOrDeleteAPI(reservationUrl.toString(), UrbanConstants.HTTP_METHOD_GET, UrbanConstants.V_PRODUCT_YAS);
+                    //reservationResponse = yantriksUtil.callYantriksGetOrDeleteAPI(reservationUrl.toString(), UrbanConstants.HTTP_METHOD_GET, UrbanConstants.V_PRODUCT_YAS);
+                    reservationResponse = "{\n" +
+                            "    \"updateTime\": \"2020-06-08T10:01:47.539Z\",\n" +
+                            "    \"updateUser\": \"RTURBNUSER\",\n" +
+                            "    \"orgId\": \"URBN\",\n" +
+                            "    \"expirationTime\": null,\n" +
+                            "    \"expirationTimeUnit\": \"SECONDS\",\n" +
+                            "    \"orderId\": \"Y100005600\",\n" +
+                            "    \"orderType\": null,\n" +
+                            "    \"lineReservationDetails\": [\n" +
+                            "        {\n" +
+                            "            \"lineId\": \"1\",\n" +
+                            "            \"fulfillmentService\": \"STANDARD\",\n" +
+                            "            \"fulfillmentType\": \"Ship\",\n" +
+                            "            \"orderLineRef\": null,\n" +
+                            "            \"productId\": \"item_based_item\",\n" +
+                            "            \"uom\": \"EACH\",\n" +
+                            "            \"locationReservationDetails\": [\n" +
+                            "                {\n" +
+                            "                    \"locationId\": \"NETWORK\",\n" +
+                            "                    \"locationType\": \"NETWORK\",\n" +
+                            "                    \"demands\": [\n" +
+                            "                        {\n" +
+                            "                            \"demandType\": \"OPEN\",\n" +
+                            "                            \"reservationDate\": \"2020-06-08\",\n" +
+                            "                            \"segment\": \"DEFAULT\",\n" +
+                            "                            \"quantity\": 1.0\n" +
+                            "                        }\n" +
+                            "                    ]\n" +
+                            "                }\n" +
+                            "            ]\n" +
+                            "        }\n" +
+                            "    ]\n" +
+                            "}";
                 } catch (Exception e) {
                     e.printStackTrace();
+                    System.out.println("Setting it UP");
+                    reservationResponse = UrbanConstants.V_EXC_FAILURE;
                 }
                 String response = yantriksUtil.determineErrorOrSuccessOnReservationPost(reservationResponse);
-                System.out.println("Response :: "+response);
+                System.out.println("Response :: " + response);
                 if (UrbanConstants.V_FAILURE.equals(response)) {
                     log.debug("UrbanDataCompareProcessor: Yantriks does not have reservation hence based on getOrderList call output updating yantriks");
                     urbanCsvOutputData = urbanToYantriksOrderDirectUpdate.directUpdateToYantriks(getOrderListOP);
+                } else if (UrbanConstants.V_EXC_FAILURE.equals(response)) {
+                    log.debug("UrbanDataCompareProcessor :: Yantriks API failed with Exception hence will set the data to write in CSV");
+                    yantriksUtil.defaultDataToPopulate(csvWriteData, reservationId, enterpriseCode, orderId, "GET_RESERVATION_FAILED");
+                    populatedOnce = true;
                 } else {
                     log.debug("UrbanDataCompareProcessor: Comparing both reservation and getOrderList Output, generating report or/and updating the yantriks");
                     urbanCsvOutputData = urbanToYantriksCompareUpdate.compareReservationsAndUpdate(getOrderListOP, reservationResponse, false);
@@ -99,7 +191,7 @@ public class UrbanDataCompareProcessor implements Processor {
             }
         }
         log.info("UrbanDataCompareProcessor : Setting the output to be written to CSV");
-        StringBuilder csvWriteData = new StringBuilder();
+        System.out.println("CSV Output Data :: " + urbanCsvOutputData.toString());
         if (urbanCsvOutputData.getExtnReservationId() != null || urbanCsvOutputData.getOrderId() != null) {
             csvWriteData.append(urbanCsvOutputData.getOrderId());
             csvWriteData.append("|");
@@ -117,13 +209,9 @@ public class UrbanDataCompareProcessor implements Processor {
                 csvWriteData.append(urbanCsvOutputData.getMessage());
             }
         } else {
-            csvWriteData.append(reservationId);
-            csvWriteData.append("|");
-            csvWriteData.append(enterpriseCode);
-            csvWriteData.append("|");
-            csvWriteData.append(orderId);
-            csvWriteData.append("|");
-            csvWriteData.append("DATA_INCORRECT");
+            if (!populatedOnce) {
+                yantriksUtil.defaultDataToPopulate(csvWriteData, reservationId, enterpriseCode, orderId, "DATA_INCORRECT");
+            }
         }
         exchange.getIn().setBody(csvWriteData.toString());
     }

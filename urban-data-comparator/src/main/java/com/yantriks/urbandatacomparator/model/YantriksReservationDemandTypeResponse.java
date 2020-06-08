@@ -14,4 +14,8 @@ public class YantriksReservationDemandTypeResponse {
     private int quantity;
     private String reservationDate;
     private String segment;
+
+    public String getUniqueKey() {
+        return demandType+":"+reservationDate;
+    }
 }
