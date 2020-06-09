@@ -3,6 +3,7 @@ package com.yantriks.urbandatacomparator.processor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sterlingcommerce.baseutil.SCXmlUtil;
 import com.yantriks.urbandatacomparator.model.*;
+import com.yantriks.urbandatacomparator.model.responses.YantriksAvailabilityErrorResponse;
 import com.yantriks.urbandatacomparator.util.UrbanConstants;
 import com.yantriks.urbandatacomparator.util.YantriksUtil;
 import com.yantriks.urbandatacomparator.validation.UrbanPopulateInventoryReservationRequest;
@@ -160,13 +161,15 @@ public class UrbanToYantriksCompareUpdate {
                     if (YantriksConstants.V_FAILURE.equals(response)) {
                         log.debug("UrbanToYantriksOrderDirectUpdate: Yantriks Reservation Call failed with FAILURE response hence will write the request in file");
                         log.debug("UrbanToYantriksOrderDirectUpdate: Writing the request in file");
+                        ObjectMapper objOut = new ObjectMapper();
+                        YantriksAvailabilityErrorResponse yantriksAvailabilityErrorResponse = objOut.readValue(reservationResponse, YantriksAvailabilityErrorResponse.class);
                         urbanCsvOutputData.setExtnReservationId(yantriksInRequest.getOrderId());
                         urbanCsvOutputData.setOrderId(orderId);
                         urbanCsvOutputData.setEnterpriseCode(enterpriseCode);
                         urbanCsvOutputData.setCompareAndGenerate(false);
-                        urbanCsvOutputData.setReservationResponseCode(0);
-                        urbanCsvOutputData.setError("");
-                        urbanCsvOutputData.setMessage("");
+                        urbanCsvOutputData.setReservationResponseCode(yantriksAvailabilityErrorResponse.getStatus());
+                        urbanCsvOutputData.setError(yantriksAvailabilityErrorResponse.getError());
+                        urbanCsvOutputData.setMessage(yantriksAvailabilityErrorResponse.getMessage());
                     } else {
                         urbanCsvOutputData.setExtnReservationId(yantriksInRequest.getOrderId());
                         urbanCsvOutputData.setOrderId(orderId);
@@ -188,6 +191,14 @@ public class UrbanToYantriksCompareUpdate {
                     urbanCsvOutputData.setMessage("");
                 }
             }
+        }
+        if (null == urbanCsvOutputData.getExtnReservationId()) {
+            log.info("ExtnReservationID is not set, that means Comparison result was Match");
+            urbanCsvOutputData.setExtnReservationId(yantriksInRequest.getOrderId());
+            urbanCsvOutputData.setOrderId(orderId);
+            urbanCsvOutputData.setEnterpriseCode(enterpriseCode);
+            urbanCsvOutputData.setCompareAndGenerate(true);
+            urbanCsvOutputData.setReservationStatus(UrbanConstants.MSG_NO_UPDATE_REQUIRED);
         }
         return urbanCsvOutputData;
     }

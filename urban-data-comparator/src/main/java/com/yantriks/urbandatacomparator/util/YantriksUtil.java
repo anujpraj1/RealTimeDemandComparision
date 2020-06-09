@@ -4,6 +4,7 @@ import com.sterlingcommerce.baseutil.SCXmlUtil;
 import com.yantra.yfc.core.YFCObject;
 import com.yantra.yfc.util.YFCCommon;
 import com.yantra.yfs.japi.YFSException;
+import com.yantriks.urbandatacomparator.model.UrbanCsvData;
 import com.yantriks.urbandatacomparator.model.UrbanCsvOutputData;
 import com.yantriks.urbandatacomparator.model.UrbanURI;
 import com.yantriks.urbandatacomparator.sterlingapis.SterlingGetShipNodeListCall;
@@ -332,7 +333,7 @@ public class YantriksUtil {
         }
     }
 
-    public void defaultDataToPopulate(StringBuilder csvWriteData, String reservationId, String enterpriseCode, String orderId, String errorResponse) {
+    public void defaultIncorrectDataToPopulate(StringBuilder csvWriteData, String reservationId, String enterpriseCode, String orderId, String errorResponse) {
         csvWriteData.append(reservationId);
         csvWriteData.append("|");
         csvWriteData.append(enterpriseCode);
@@ -340,5 +341,39 @@ public class YantriksUtil {
         csvWriteData.append(orderId);
         csvWriteData.append("|");
         csvWriteData.append(errorResponse);
+    }
+
+    public void dataFromCompareAndGenerate(StringBuilder csvWriteData, UrbanCsvOutputData urbanCsvData) {
+        csvWriteData.append(urbanCsvData.getExtnReservationId());
+        csvWriteData.append("|");
+        csvWriteData.append(urbanCsvData.getEnterpriseCode());
+        csvWriteData.append("|");
+        csvWriteData.append(urbanCsvData.getOrderId());
+        csvWriteData.append("|");
+        csvWriteData.append(urbanCsvData.getReservationStatus());
+    }
+
+    public void dataFromCompareAndUpdate(StringBuilder csvWriteData, UrbanCsvOutputData urbanCsvData) {
+        csvWriteData.append(urbanCsvData.getExtnReservationId());
+        csvWriteData.append("|");
+        csvWriteData.append(urbanCsvData.getEnterpriseCode());
+        csvWriteData.append("|");
+        csvWriteData.append(urbanCsvData.getOrderId());
+        csvWriteData.append("|");
+        csvWriteData.append(urbanCsvData.getReservationResponseCode());
+        csvWriteData.append("|");
+        csvWriteData.append(urbanCsvData.getError());
+        csvWriteData.append("|");
+        csvWriteData.append(urbanCsvData.getMessage());
+    }
+
+    public void populateCSVData(StringBuilder csvWriteData, UrbanCsvOutputData urbanCsvOutputData) {
+        if (urbanCsvOutputData.isCompareAndGenerate()) {
+            log.info("YantriksUtil : Only Data will be generated no update");
+            dataFromCompareAndGenerate(csvWriteData, urbanCsvOutputData);
+        } else {
+            log.info("YantriksUtil: Compare And Update Data");
+            dataFromCompareAndUpdate(csvWriteData, urbanCsvOutputData);
+        }
     }
 }

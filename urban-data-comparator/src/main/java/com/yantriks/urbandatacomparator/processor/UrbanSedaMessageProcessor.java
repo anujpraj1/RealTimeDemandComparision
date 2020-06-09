@@ -17,7 +17,7 @@ public class UrbanSedaMessageProcessor implements Processor {
         List<String> inputList = exchange.getIn().getBody(List.class);
         System.out.println("My String :: "+inputList);
         log.debug("UrbanSedaMessageProcessor: Input to UrbanSedaMessageProcessor"+exchange.getIn().getBody());
-        log.debug("UrbanSedaMessageProcessor: Current Thread : "+Thread.currentThread());
+        log.info("UrbanSedaMessageProcessor: Current Thread : "+Thread.currentThread());
         UrbanCsvData urbanCsvData = new UrbanCsvData();
         urbanCsvData.setReservationId(inputList.get(0).trim());
         urbanCsvData.setEnterpriseCode(inputList.get(1).trim());

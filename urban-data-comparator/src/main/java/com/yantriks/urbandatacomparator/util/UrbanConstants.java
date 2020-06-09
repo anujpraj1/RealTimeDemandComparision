@@ -24,8 +24,9 @@ public class UrbanConstants {
     public static final String API_GET_INV_RESERVATION_LIST = "getInventoryReservationList";
     public static final String API_GET_ORGANIZATION_LIST = "getOrganizationList";
     public static final String ELE_ORDER = "Order";
+    public static final String A_TOTAL_NUM_OF_RECORDS = "TotalNumberOfRecords";
 
-    public static final String TEMPLATE_GET_ORDER_LIST = "<OrderList TotalOrderList=\"\">\n" +
+    public static final String TEMPLATE_GET_ORDER_LIST = "<OrderList TotalNumberOfRecords=\"\">\n" +
             "\t<Order OrderHeaderKey=\"\" OrderNo=\"\" EnterpriseCode=\"\">\n" +
             "\t<Extn ExtnReservationID=\"\" />\n" +
             "\t\t<OrderLines>\n" +
@@ -173,9 +174,15 @@ public class UrbanConstants {
     public static final String RS_MISMATCH = "MISMATCH";
     public static final String RS_MISSING = "MISSING";
     public static final String ERR_YANT_SERVER_DOWN = "YANTRIKS_SERVER_DOWN";
+    public static final String ERR_GET_RESERVATION_FAILED = "YANT_GET_RESERVATION_FAILED";
+    public static final String ERR_GET_ORDER_LIST_FAILED = "STER_GET_ORDER_FAILED";
+    public static final String ERR_NO_ORDER_FOUND = "STER_NO_ORDER_FOUND";
+    public static final String ERR_GET_INV_RESERVATION_FAILED = "STER_GET_INV_RESERVATION_FAILED";
+    public static final String ERR_DATA_INCORRECT = "DATA_INCORRECT";
     public static final int RC_201 = 201;
     public static final int RC_200 = 200;
     public static final int RC_500 = 500;
     public static final String MSG_SUCCESS = "SUCCESS";
+    public static final String MSG_NO_UPDATE_REQUIRED = "MATCH_NO_UPDATE";
     public static final String A_MAX_ORDER_STATUS = "MaxOrderStatus";
 }
