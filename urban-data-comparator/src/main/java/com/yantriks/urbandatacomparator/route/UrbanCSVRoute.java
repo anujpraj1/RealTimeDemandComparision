@@ -68,7 +68,8 @@ public class UrbanCSVRoute extends RouteBuilder {
     public void configure() throws Exception {
 
         String inputFileURI = getAbsFileURIPath(absInDirectoryPath) + getInputQueryParams();
-        String outputFileURI = getAbsFileURIPath(absInDirectoryPath) + getOutputQueryParams();
+        String outputFileURI = getAbsFileURIPath(absOPDirectoryPath) + getOutputQueryParams();
+        System.out.println("Output FIle URI :: "+outputFileURI);
 
         String SEDA_END_POINT = getSedaUri(sedaQueue);
 

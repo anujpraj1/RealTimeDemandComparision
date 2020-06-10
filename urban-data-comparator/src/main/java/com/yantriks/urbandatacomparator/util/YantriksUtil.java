@@ -4,11 +4,10 @@ import com.sterlingcommerce.baseutil.SCXmlUtil;
 import com.yantra.yfc.core.YFCObject;
 import com.yantra.yfc.util.YFCCommon;
 import com.yantra.yfs.japi.YFSException;
-import com.yantriks.urbandatacomparator.model.UrbanCsvData;
 import com.yantriks.urbandatacomparator.model.UrbanCsvOutputData;
 import com.yantriks.urbandatacomparator.model.UrbanURI;
-import com.yantriks.urbandatacomparator.sterlingapis.SterlingGetShipNodeListCall;
-import com.yantriks.yih.adapter.util.YantriksConstants;
+import com.yantriks.urbandatacomparator.sterlingapis.SterlingAPIDocumentCreator;
+import com.yantriks.urbandatacomparator.sterlingapis.SterlingAPIUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.json.JSONException;
 import org.apache.commons.json.JSONObject;
@@ -42,7 +41,10 @@ public class YantriksUtil {
     UrbanURI urbanURI;
 
     @Autowired
-    SterlingGetShipNodeListCall sterlingGetOrganizationListCall;
+    SterlingAPIDocumentCreator sterlingAPIDocumentCreator;
+
+    @Autowired
+    SterlingAPIUtil sterlingAPIUtil;
 
 
     public String callYantriksGetOrDeleteAPI(String apiUrl, String httpMethod, String productToCall) {
@@ -223,12 +225,14 @@ public class YantriksUtil {
     }
 
     public String getLocationType(String locationId) throws Exception {
-        Document orgList = sterlingGetOrganizationListCall.executeGetOrganizationListCall(locationId);
-        Element eleOrganization = SCXmlUtil.getChildElement(orgList.getDocumentElement(), UrbanConstants.ELE_ORGANIZATION);
-        Element eleNode = SCXmlUtil.getChildElement(eleOrganization, UrbanConstants.A_SHIP_NODE);
-        if (!YFCObject.isVoid(eleNode)) {
-            String nodeType = eleNode.getAttribute(UrbanConstants.NODE_TYPE);
-            Element extnNode = SCXmlUtil.getChildElement(eleNode, UrbanConstants.ELE_EXTN);
+        Document getShipNodeInDoc = sterlingAPIDocumentCreator.createInDocForGetShipNodeList(locationId);
+        Document shipNodeList = sterlingAPIUtil.invokeSterlingAPI(getShipNodeInDoc, SCXmlUtil.createFromString(UrbanConstants.TEMPLATE_GET_SHIPNODE_LIST), UrbanConstants.API_GET_SHIP_NODE_LIST);
+        //Document orgList = sterlingGetOrganizationListCall.executeGetOrganizationListCall(locationId);
+        //Element eleOrganization = SCXmlUtil.getChildElement(shipNodeList.getDocumentElement(), UrbanConstants.ELE_SHIPNODE);
+        Element eleShipNode = SCXmlUtil.getChildElement(shipNodeList.getDocumentElement(), UrbanConstants.A_SHIP_NODE);
+        if (!YFCObject.isVoid(eleShipNode)) {
+            String nodeType = eleShipNode.getAttribute(UrbanConstants.NODE_TYPE);
+            Element extnNode = SCXmlUtil.getChildElement(eleShipNode, UrbanConstants.ELE_EXTN);
             String nodeClass = "";
             if (!YFCObject.isVoid(extnNode)) {
                 nodeClass = extnNode.getAttribute(UrbanConstants.E_NODE_CLASS);

@@ -1,7 +1,10 @@
 package com.yantriks.urbandatacomparator.processor;
 
+import com.sterlingcommerce.baseutil.SCXmlUtil;
 import com.yantriks.urbandatacomparator.model.UrbanCsvData;
 import com.yantriks.urbandatacomparator.model.UrbanCsvOutputData;
+import com.yantriks.urbandatacomparator.sterlingapis.SterlingAPIDocumentCreator;
+import com.yantriks.urbandatacomparator.sterlingapis.SterlingAPIUtil;
 import com.yantriks.urbandatacomparator.sterlingapis.SterlingGetInvListCall;
 import com.yantriks.urbandatacomparator.sterlingapis.SterlingGetOrderListCall;
 import com.yantriks.urbandatacomparator.util.UrbanConstants;
@@ -17,12 +20,6 @@ import org.w3c.dom.Document;
 @Component
 public class UrbanDataCompareProcessor implements Processor {
 
-    @Autowired
-    SterlingGetInvListCall sterlingGetInvListCall;
-
-    @Autowired
-    SterlingGetOrderListCall sterlingGetOrderListCall;
-
 
     @Autowired
     UrbanToYantriksInvDirectUpdate urbanToYantriksInvDirectUpdate;
@@ -36,6 +33,11 @@ public class UrbanDataCompareProcessor implements Processor {
     @Autowired
     YantriksUtil yantriksUtil;
 
+    @Autowired
+    SterlingAPIDocumentCreator sterlingAPIDocumentCreator;
+
+    @Autowired
+    SterlingAPIUtil sterlingAPIUtil;
 
     @Override
     public void process(Exchange exchange) throws Exception {
@@ -64,8 +66,10 @@ public class UrbanDataCompareProcessor implements Processor {
 
         log.debug("UrbanDataCompareProcessor: Reservation Id present hence first check would be getInventoryReservationList");
         Document getInventoryReservationList = null;
+        Document inDoc = sterlingAPIDocumentCreator.createInDocForGetInvReservation(reservationId);
         try {
-            getInventoryReservationList = sterlingGetInvListCall.executeGetInvListApi(reservationId);
+            getInventoryReservationList = sterlingAPIUtil.invokeSterlingAPI(inDoc, UrbanConstants.API_GET_INV_RESERVATION_LIST);
+            //getInventoryReservationList = sterlingGetInvListCall.executeGetInvListApi(reservationId);
         } catch (Exception e) {
             log.error("Exception Caught while calling getInventoryReservationList", e.getMessage());
             log.error("Cause of Exception", e.getCause());
@@ -148,9 +152,11 @@ public class UrbanDataCompareProcessor implements Processor {
                 yantriksUtil.defaultIncorrectDataToPopulate(csvWriteData, reservationId, "", "", UrbanConstants.ERR_DATA_INCORRECT);
             } else {
                 log.debug("UrbanDataCompareProcessor: Calling getOrderList API of sterling");
+                Document getOrderInDoc = sterlingAPIDocumentCreator.createInDocForGetOrderList(enterpriseCode, orderId);
                 Document getOrderListOP = null;
                 try {
-                    getOrderListOP = sterlingGetOrderListCall.executeGetOLListApi(orderId, enterpriseCode);
+                    getOrderListOP = sterlingAPIUtil.invokeSterlingAPI(getOrderInDoc, SCXmlUtil.createFromString(UrbanConstants.TEMPLATE_GET_ORDER_LIST), UrbanConstants.API_GET_ORDER_LIST);
+                    //getOrderListOP = sterlingGetOrderListCall.executeGetOLListApi(orderId, enterpriseCode);
                 } catch (Exception e) {
                     log.error("Exception while calling Sterling API : "+e.getMessage()+"Cause : "+e.getCause());
                     yantriksUtil.defaultIncorrectDataToPopulate(csvWriteData, reservationId, enterpriseCode, orderId, UrbanConstants.ERR_GET_ORDER_LIST_FAILED);

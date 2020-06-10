@@ -65,7 +65,7 @@ public class UrbanToYantriksOrderDirectUpdate {
                 log.debug("CompareAndUpdate Flag is turned on, Hence calling yantriks api to update in Yantriks");
                 StringBuilder reserveUrl = new StringBuilder(UrbanConstants.YANTRIKS_RESERVE_URL);
                 reserveUrl = urbanURI.getReservationUrl(reserveUrl, UrbanConstants.SC_GLOBAL, transactionType,
-                        true, false, true, true);
+                        true, false, false, true);
                 try {
                     ObjectMapper jsonObjMapper = new ObjectMapper();
                     String httpBody = jsonObjMapper.writeValueAsString(yantriksReservationRequest);

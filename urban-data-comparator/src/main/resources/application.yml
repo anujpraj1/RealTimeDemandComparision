@@ -31,7 +31,7 @@ logging:
 urban:
   sterling:
     protocol: http
-    url: localhost:7001
+    url: sushqssteriap01.urbanout.com:8080
     apitester:
       userid: admin
       password: password
@@ -40,9 +40,9 @@ urban:
     inventoryproduct: ilt
     masterdataproduct: ycs
     protocol: https
-    timeout: 3000
+    timeout: 10000
     availability:
-        host: staging-yantriks-api.urbncloud.com
+        host: staging-yantriks-api.urbncloud.com/availability
         port:
     inventorylite:
         host: localhost:8096

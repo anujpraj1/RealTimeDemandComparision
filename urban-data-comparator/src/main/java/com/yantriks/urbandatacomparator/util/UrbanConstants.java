@@ -14,8 +14,10 @@ public class UrbanConstants {
     public static final String CONST__LOGIN = "login";
     public static final String CONST_LOGIN_ID = "LoginID";
     public static final String CONST_CAMELCASE_PASSWORD = "Password";
+    public static final String CONST_PASSWORD = "password";
     public static final String CONST_CAPS_HTTP = "HTTP";
     public static final String CONST_YIF_HTTP_API_URL = "yif.httpapi.url";
+    public static final String CONST_YIF_APIFACTORY_PROTOCOL = "yif.apifactory.protocol";
     public static final String CONST_API_TESTER_URL = "/smcfs/interop/InteropHttpServlet";
     public static final String A_ORDER_NO = "OrderNo";
     public static final String A_DOCUMENT_TYPE = "DocumentType";
