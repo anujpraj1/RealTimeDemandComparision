@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.yantriks</groupId>
 	<artifactId>urban-data-comparator</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1</version>
 	<name>urban-data-comparator</name>
 	<description>Spring Boot Project for Demand Reconciliation</description>
 
