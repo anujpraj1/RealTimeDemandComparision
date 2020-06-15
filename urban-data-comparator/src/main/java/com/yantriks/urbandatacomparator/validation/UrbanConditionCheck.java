@@ -16,7 +16,6 @@ public class UrbanConditionCheck {
     }
 
     public boolean isActionModeCompareAndUpdate() {
-        System.out.println("Action Mode :: "+actionMode);
         return true;
     }
 

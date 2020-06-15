@@ -80,52 +80,7 @@ public class UrbanDataCompareProcessor implements Processor {
             log.debug("UrbanDataCompareProcessor: Reservation exist in Sterling which means order is not created hence needs to be checked against yantriks");
             String reservationResponse = null;
             try {
-                //reservationResponse = yantriksUtil.callYantriksGetOrDeleteAPI(reservationUrl.toString(), UrbanConstants.HTTP_METHOD_GET, UrbanConstants.V_PRODUCT_YAS);
-                reservationResponse = "{\n" +
-                        "    \"updateTime\": \"2020-06-08T18:25:16.790Z\",\n" +
-                        "    \"updateUser\": \"RTURBNUSER\",\n" +
-                        "    \"orgId\": \"URBN\",\n" +
-                        "    \"expirationTime\": \"2500-01-01T06:12:22.107\",\n" +
-                        "    \"expirationTimeUnit\": \"HOURS\",\n" +
-                        "    \"orderId\": \"Something_TEST\",\n" +
-                        "    \"orderType\": null,\n" +
-                        "    \"lineReservationDetails\": [\n" +
-                        "        {\n" +
-                        "            \"lineId\": \"1\",\n" +
-                        "            \"fulfillmentService\": \"STANDARD\",\n" +
-                        "            \"fulfillmentType\": \"Ship\",\n" +
-                        "            \"orderLineRef\": null,\n" +
-                        "            \"productId\": \"TEST_ITEM\",\n" +
-                        "            \"uom\": \"TEST\",\n" +
-                        "            \"locationReservationDetails\": [\n" +
-                        "                {\n" +
-                        "                    \"locationId\": \"TEST_NODE\",\n" +
-                        "                    \"locationType\": null,\n" +
-                        "                    \"demands\": [\n" +
-                        "                        {\n" +
-                        "                            \"demandType\": \"RESERVED\",\n" +
-                        "                            \"reservationDate\": \"2020-06-11\",\n" +
-                        "                            \"segment\": \"DEFAULT\",\n" +
-                        "                            \"quantity\": 2.0\n" +
-                        "                        }\n" +
-                        "                    ]\n" +
-                        "                },\n" +
-                        "                {\n" +
-                        "                    \"locationId\": \"TEST_NODE_NO_INVENTORY\",\n" +
-                        "                    \"locationType\": null,\n" +
-                        "                    \"demands\": [\n" +
-                        "                        {\n" +
-                        "                            \"demandType\": \"RESERVED\",\n" +
-                        "                            \"reservationDate\": \"2020-06-12\",\n" +
-                        "                            \"segment\": \"DEFAULT\",\n" +
-                        "                            \"quantity\": 2.0\n" +
-                        "                        }\n" +
-                        "                    ]\n" +
-                        "                }\n" +
-                        "            ]\n" +
-                        "        }\n" +
-                        "    ]\n" +
-                        "}";
+                reservationResponse = yantriksUtil.callYantriksGetOrDeleteAPI(reservationUrl.toString(), UrbanConstants.HTTP_METHOD_GET, UrbanConstants.V_PRODUCT_YAS);
             } catch (Exception e) {
                 log.error("UrbanDataCompareProcessor: Yantriks Get Reservation failed");
                 reservationResponse = UrbanConstants.V_EXC_FAILURE;
@@ -169,47 +124,14 @@ public class UrbanDataCompareProcessor implements Processor {
                     log.info("UrbanDataCompareProcessor : Received Orders as part of getOrderList Call");
                     String reservationResponse = null;
                     try {
-                        //reservationResponse = yantriksUtil.callYantriksGetOrDeleteAPI(reservationUrl.toString(), UrbanConstants.HTTP_METHOD_GET, UrbanConstants.V_PRODUCT_YAS);
-                        reservationResponse = "{\n" +
-                                "    \"updateTime\": \"2020-06-08T10:01:47.539Z\",\n" +
-                                "    \"updateUser\": \"RTURBNUSER\",\n" +
-                                "    \"orgId\": \"URBN\",\n" +
-                                "    \"expirationTime\": null,\n" +
-                                "    \"expirationTimeUnit\": \"SECONDS\",\n" +
-                                "    \"orderId\": \"Y100005600\",\n" +
-                                "    \"orderType\": null,\n" +
-                                "    \"lineReservationDetails\": [\n" +
-                                "        {\n" +
-                                "            \"lineId\": \"1\",\n" +
-                                "            \"fulfillmentService\": \"STANDARD\",\n" +
-                                "            \"fulfillmentType\": \"Ship\",\n" +
-                                "            \"orderLineRef\": null,\n" +
-                                "            \"productId\": \"item_based_item\",\n" +
-                                "            \"uom\": \"EACH\",\n" +
-                                "            \"locationReservationDetails\": [\n" +
-                                "                {\n" +
-                                "                    \"locationId\": \"NETWORK\",\n" +
-                                "                    \"locationType\": \"NETWORK\",\n" +
-                                "                    \"demands\": [\n" +
-                                "                        {\n" +
-                                "                            \"demandType\": \"OPEN\",\n" +
-                                "                            \"reservationDate\": \"2020-06-08\",\n" +
-                                "                            \"segment\": \"DEFAULT\",\n" +
-                                "                            \"quantity\": 1.0\n" +
-                                "                        }\n" +
-                                "                    ]\n" +
-                                "                }\n" +
-                                "            ]\n" +
-                                "        }\n" +
-                                "    ]\n" +
-                                "}";
+                        reservationResponse = yantriksUtil.callYantriksGetOrDeleteAPI(reservationUrl.toString(), UrbanConstants.HTTP_METHOD_GET, UrbanConstants.V_PRODUCT_YAS);
                     } catch (Exception e) {
-                        e.printStackTrace();
-                        System.out.println("Setting it UP");
+                        log.error("Exception Caught while calling get Reservation : "+e.getMessage());
+                        log.error("Cause : "+e.getCause());
                         reservationResponse = UrbanConstants.V_EXC_FAILURE;
                     }
                     String response = yantriksUtil.determineErrorOrSuccessOnReservationPost(reservationResponse);
-                    System.out.println("Response :: " + response);
+                    log.debug("Response of determineErrorOrSuccessOnReservationPost : " + response);
                     if (UrbanConstants.V_FAILURE.equals(response)) {
                         log.debug("UrbanDataCompareProcessor: Yantriks does not have reservation hence based on getOrderList call output updating yantriks");
                         urbanCsvOutputData = urbanToYantriksOrderDirectUpdate.directUpdateToYantriks(getOrderListOP);

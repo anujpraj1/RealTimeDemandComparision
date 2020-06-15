@@ -32,11 +32,8 @@ public class SterlingGetInvListCall {
 
 	public Document executeGetInvListApi(String reservationID) throws Exception
 	{
-		System.out.println("Inside");
 		Map<String, String> map = new HashMap<String, String>();
-		System.out.println("Inside Here");
-		System.out.println("Inside Here now");
-		System.out.println("Sterling URI :: "+urbanURI.getSterlingURL());
+		log.debug("Sterling URI :: "+urbanURI.getSterlingURL());
 		map.put(UrbanConstants.CONST_YIF_HTTP_API_URL, urbanURI.getSterlingURL());
 		XApi api = XApiClientFactory.getInstance().getApi(UrbanConstants.CONST_CAPS_HTTP, map);
 		
@@ -61,9 +58,9 @@ public class SterlingGetInvListCall {
 		//root = inEle;
 		input.appendChild(root);
 		root.setAttribute(UrbanConstants.A_RESERVATION_ID, reservationID);
-		System.out.println("Input for getInventoryReservation "+XApiXmlUtil.getString(input));
+		log.debug("Input for getInventoryReservation "+XApiXmlUtil.getString(input));
 		Document doc = api.invoke(env, UrbanConstants.API_GET_INV_RESERVATION_LIST, input);
-		System.out.println("Output for getInventoryReservation "+XApiXmlUtil.getString(doc));
+		log.debug("Output for getInventoryReservation "+XApiXmlUtil.getString(doc));
 
 		return doc;
 	}

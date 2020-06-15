@@ -32,10 +32,7 @@ public class SterlingGetOrderListCall {
 
 	public Document executeGetOLListApi(String orderNo, String enterpriseCode) throws Exception
 	{
-		System.out.println("Inside");
 		Map<String, String> map = new HashMap<String, String>();
-		System.out.println("Inside Here");
-		System.out.println("Inside Here now");
 		map.put(UrbanConstants.CONST_YIF_HTTP_API_URL, urbanURI.getSterlingURL());
 		XApi api = XApiClientFactory.getInstance().getApi(UrbanConstants.CONST_CAPS_HTTP, map);
 		
@@ -63,9 +60,9 @@ public class SterlingGetOrderListCall {
 		root.setAttribute(UrbanConstants.A_DOCUMENT_TYPE, UrbanConstants.V_DOCTYPE_0001);
 		root.setAttribute(UrbanConstants.A_ENTERPRISE_CODE, enterpriseCode);
 		env.setApiTemplate(UrbanConstants.API_GET_ORDER_LIST, SCXmlUtil.createFromString(UrbanConstants.TEMPLATE_GET_ORDER_LIST));
-		System.out.println("Input for getOrderList "+XApiXmlUtil.getString(input));
+		log.debug("Input for getOrderList "+XApiXmlUtil.getString(input));
 		Document doc = api.invoke(env, UrbanConstants.API_GET_ORDER_LIST, input);
-		System.out.println("HEHEHHEEEHHEE"+XApiXmlUtil.getString(doc));
+		log.debug("Output for getOrderList"+XApiXmlUtil.getString(doc));
 		return doc;
 	}
 }

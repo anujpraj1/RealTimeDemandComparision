@@ -91,10 +91,10 @@ public class YantriksUtil {
             conn.setDoOutput(true);
             conn.setRequestMethod(httpMethod);
             String strJWTToken = GenerateSignedJWTToken.getJWTTokenStr();
-            System.out.println("JWT TOKEN :: "+strJWTToken);
+            log.debug("JWT TOKEN :: "+strJWTToken);
             conn.setRequestProperty("Authorization", "Bearer  " + strJWTToken);
 
-            System.out.println("Time Out :: "+timeout);
+            log.debug("callYantriksGetOrDeleteAPI : TimeOut Value : "+timeout);
             if (!YFCCommon.isVoid(timeout)) {
                 conn.setConnectTimeout(timeout);
             }
@@ -111,7 +111,7 @@ public class YantriksUtil {
                 while ((outputLine = br.readLine()) != null) {
                     outputStr = outputStr.concat(outputLine);
                 }
-                System.out.println("OuputSTR :: "+outputStr);
+                log.debug("Output callYantriksGetOrDeleteAPI :: "+outputStr);
                 return "FAILURE";
             }
             BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
@@ -179,6 +179,11 @@ public class YantriksUtil {
             conn.setDoInput(true);
             conn.setDoOutput(true);
             conn.setRequestMethod(httpMethod);
+            String strJWTToken = GenerateSignedJWTToken.getJWTTokenStr();
+            log.debug("JWT TOKEN :: "+strJWTToken);
+            conn.setRequestProperty("Authorization", "Bearer  " + strJWTToken);
+
+            log.debug("callYantriksAPI : TimeOut Value : "+timeout);
 
             OutputStream os = conn.getOutputStream();
             os.write(body.getBytes());
@@ -200,7 +205,7 @@ public class YantriksUtil {
                 while ((outputLine = br.readLine()) != null) {
                     outputStr = outputStr.concat(outputLine);
                 }
-                System.out.println("OuputSTR :: "+outputStr);
+                log.debug("Output String returned from Server :: "+outputStr);
                 return outputStr;
             }
             BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
@@ -210,7 +215,7 @@ public class YantriksUtil {
                 outputStr = outputStr.concat(outputLine);
             }
             if (log.isDebugEnabled()) {
-                log.debug("Output from Server ::");
+                log.debug("Output from Server::");
                 log.debug(outputStr);
             }
             conn.disconnect();
@@ -327,8 +332,8 @@ public class YantriksUtil {
             return UrbanConstants.V_EXC_FAILURE;
         } else {
             JSONObject outputObj = new JSONObject(reservationRestCallOutput);
-            System.out.println("Output Object :: "+outputObj.toString());
-            System.out.println("*******"+outputObj.containsKey("status"));
+            log.debug("Output Object :: "+outputObj.toString());
+            log.debug("Status Check : "+outputObj.containsKey("status"));
             if (!outputObj.containsKey("status")) {
                 return "SUCCESS";
             } else {

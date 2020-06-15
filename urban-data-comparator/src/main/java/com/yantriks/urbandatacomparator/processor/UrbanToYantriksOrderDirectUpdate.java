@@ -40,7 +40,7 @@ public class UrbanToYantriksOrderDirectUpdate {
 
     public UrbanCsvOutputData directUpdateToYantriks(Document inDoc) {
         YantriksReservationRequest yantriksReservationRequest = urbanPopulateOrderReservationRequest.createReservationRequestFromOrderListOP(inDoc);
-        System.out.println("OrderList XML :: "+SCXmlUtil.getString(inDoc));
+        log.debug("OrderList XML :: "+SCXmlUtil.getString(inDoc));
         Element eleRoot = inDoc.getDocumentElement();
         Element eleOrder = SCXmlUtil.getChildElement(eleRoot, YantriksConstants.ORDER);
 
@@ -71,33 +71,7 @@ public class UrbanToYantriksOrderDirectUpdate {
                     String httpBody = jsonObjMapper.writeValueAsString(yantriksReservationRequest);
                     log.debug("HttpBody :: " + httpBody);
                     log.debug("Reserve URL :: "+reserveUrl);
-                    //String reservationResponse = yantriksUtil.callYantriksAPI(reserveUrl.toString(), UrbanConstants.HTTP_METHOD_POST, httpBody, UrbanConstants.V_PRODUCT_YAS);
-                    String reservationResponse = "{\n" +
-                            "    \"path\": \"/availability-services/reservations/v3.0/GLOBAL/oms-reserve\",\n" +
-                            "    \"errorLines\": [\n" +
-                            "        {\n" +
-                            "            \"lineId\": \"1\",\n" +
-                            "            \"locations\": [\n" +
-                            "                {\n" +
-                            "                    \"locationKey\": {\n" +
-                            "                        \"locationId\": \"NETWORK\",\n" +
-                            "                        \"locationType\": \"NETWORK\"\n" +
-                            "                    },\n" +
-                            "                    \"errors\": [\n" +
-                            "                        {\n" +
-                            "                            \"message\": \"NOT_ENOUGH_ATP\",\n" +
-                            "                            \"shortageQty\": 487.0\n" +
-                            "                        }\n" +
-                            "                    ]\n" +
-                            "                }\n" +
-                            "            ]\n" +
-                            "        }\n" +
-                            "    ],\n" +
-                            "    \"error\": \"BAD_REQUEST\",\n" +
-                            "    \"message\": \"NOT_ENOUGH_ATP\",\n" +
-                            "    \"status\": 400,\n" +
-                            "    \"timestamp\": \"2020-06-08T11:03:31.21Z\"\n" +
-                            "}";
+                    String reservationResponse = yantriksUtil.callYantriksAPI(reserveUrl.toString(), UrbanConstants.HTTP_METHOD_POST, httpBody, UrbanConstants.V_PRODUCT_YAS);
                     String response = yantriksUtil.determineErrorOrSuccessOnReservationPost(reservationResponse);
                     if (YantriksConstants.V_FAILURE.equals(response)) {
                         log.debug("UrbanToYantriksOrderDirectUpdate: Yantriks Reservation Call failed with FAILURE response hence will write the request in file");

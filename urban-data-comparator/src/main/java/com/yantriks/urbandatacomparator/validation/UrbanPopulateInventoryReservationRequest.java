@@ -82,7 +82,7 @@ public class UrbanPopulateInventoryReservationRequest {
                         .locationType(locationType)
                         .demands(reservationDemandTypeRequests)
                         .build();
-                System.out.println("yantriksLineReservationDetailsRequest.getLocationReservationDetails()"+yantriksLocationReservationDetailsRequest.getDemands().isEmpty());
+                log.debug("yantriksLineReservationDetailsRequest.getLocationReservationDetails()"+yantriksLocationReservationDetailsRequest.getDemands().isEmpty());
                 locationReservationDetailsRequests.add(yantriksLocationReservationDetailsRequest);
 
                 YantriksLineReservationDetailsRequest yantriksLineReservationDetailsRequest = YantriksLineReservationDetailsRequest.builder()
@@ -93,8 +93,8 @@ public class UrbanPopulateInventoryReservationRequest {
                         .uom(eleItem.getAttribute(UrbanConstants.A_UOM))
                         .locationReservationDetails(locationReservationDetailsRequests)
                         .build();
-                System.out.println("yantriksLineReservationDetailsRequest.getLocationReservationDetails()"+yantriksLineReservationDetailsRequest.getLocationReservationDetails().isEmpty());
-                System.out.println("Populating LINE Request");
+                log.debug("yantriksLineReservationDetailsRequest.getLocationReservationDetails()"+yantriksLineReservationDetailsRequest.getLocationReservationDetails().isEmpty());
+                log.debug("Populating LINE Request");
                 lineReservationDetailsRequests.add(yantriksLineReservationDetailsRequest);
                 counter++;
             }
@@ -151,7 +151,7 @@ public class UrbanPopulateInventoryReservationRequest {
     }
 
     private void addDemandDetails(List<YantriksReservationDemandTypeRequest> demands, String shipDate, int qtyToPut) {
-        System.out.println("Adding the Demand Details");
+        log.debug("Adding the Demand Details");
                     YantriksReservationDemandTypeRequest yantriksReservationDemandTypeRequest = YantriksReservationDemandTypeRequest.builder()
                             .demandType(UrbanConstants.DT_RESERVED)
                             .quantity(qtyToPut)

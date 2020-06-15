@@ -94,8 +94,8 @@ public class UrbanPopulateOrderReservationRequest {
                         List<Element> scheduleList = new ArrayList<>();
                         currSchedule.setAttribute(UrbanConstants.A_STATUS, statusFromMap);
                         scheduleList.add(currSchedule);
-                        System.out.println("SHIP Node :: "+shipNode);
-                        System.out.println("Schedule :: "+SCXmlUtil.getString(currSchedule));
+                        log.debug("SHIP Node :: "+shipNode);
+                        log.debug("Schedule :: "+SCXmlUtil.getString(currSchedule));
                         shipNodeToSchedule.put(shipNode, scheduleList);
                     }
                 }
@@ -122,8 +122,8 @@ public class UrbanPopulateOrderReservationRequest {
                                                 .reservationDate(element.getAttribute(UrbanConstants.A_EXP_SHIP_DATE).substring(0, 10))
                                                 .segment(segment)
                                                 .build();
-                                        System.out.println("Current Demand Adding :: "+yantriksReservationDemandTypeRequest.toString());
-                                        System.out.println("Current Demand Adding :: "+yantriksReservationDemandTypeRequest);
+                                        log.debug("Current Demand Adding :: "+yantriksReservationDemandTypeRequest.toString());
+                                        log.debug("Current Demand Adding :: "+yantriksReservationDemandTypeRequest);
                                         reservationDemandTypeRequests.add(yantriksReservationDemandTypeRequest);
                                     } else {
                                         log.debug("Status found : " + statusOfDemand + " Hence did not create a demand for it");
@@ -139,7 +139,7 @@ public class UrbanPopulateOrderReservationRequest {
                         } catch (Exception ex) {
                             log.error("Exception Caught while determining the location type : " + ex.getMessage());
                         }
-                        System.out.println("EMPTY CHECK FOR DEMAND "+reservationDemandTypeRequests.isEmpty());
+                        log.debug("EMPTY CHECK FOR DEMAND "+reservationDemandTypeRequests.isEmpty());
                         if (!reservationDemandTypeRequests.isEmpty()) {
                             locationReservationDetailsRequests.add(yantriksLocationReservationDetailsRequest);
                         }
@@ -152,7 +152,7 @@ public class UrbanPopulateOrderReservationRequest {
                     .uom(eleItem.getAttribute(UrbanConstants.A_UOM))
                     .locationReservationDetails(locationReservationDetailsRequests)
                     .build();
-            System.out.println("EMPTY CHECK FOR LOCATION "+locationReservationDetailsRequests.isEmpty());
+            log.debug("EMPTY CHECK FOR LOCATION "+locationReservationDetailsRequests.isEmpty());
             if (!locationReservationDetailsRequests.isEmpty()) {
                 lineReservationDetailsRequests.add(yantriksLineReservationDetailsRequest);
             }

@@ -1,6 +1,5 @@
 package com.yantriks.urbandatacomparator.processor;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yantriks.urbandatacomparator.model.UrbanCsvData;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
@@ -15,7 +14,7 @@ public class UrbanSedaMessageProcessor implements Processor {
     @Override
     public void process(Exchange exchange) throws Exception {
         List<String> inputList = exchange.getIn().getBody(List.class);
-        System.out.println("My String :: "+inputList);
+        log.debug("UrbanSedaMessageProcessor : Input List  :: "+inputList);
         log.debug("UrbanSedaMessageProcessor: Input to UrbanSedaMessageProcessor"+exchange.getIn().getBody());
         log.info("UrbanSedaMessageProcessor: Current Thread : "+Thread.currentThread());
         UrbanCsvData urbanCsvData = new UrbanCsvData();

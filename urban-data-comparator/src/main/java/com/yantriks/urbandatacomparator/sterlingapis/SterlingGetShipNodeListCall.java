@@ -36,10 +36,7 @@ public class SterlingGetShipNodeListCall {
 
 	public Document executeGetOrganizationListCall(String locationId) throws Exception
 	{
-		System.out.println("Inside");
 		Map<String, String> map = new HashMap<String, String>();
-		System.out.println("Inside Here");
-		System.out.println("Inside Here now");
 		map.put(UrbanConstants.CONST_YIF_HTTP_API_URL, urbanURI.getSterlingURL());
 		XApi api = XApiClientFactory.getInstance().getApi(UrbanConstants.CONST_CAPS_HTTP, map);
 		
@@ -65,9 +62,9 @@ public class SterlingGetShipNodeListCall {
 		input.appendChild(root);
 		root.setAttribute(UrbanConstants.A_SHIP_NODE, locationId);
 		env.setApiTemplate(UrbanConstants.API_GET_SHIP_NODE_LIST, SCXmlUtil.createFromString(UrbanConstants.TEMPLATE_GET_SHIPNODE_LIST));
-		System.out.println("Input for getShipNodeList "+XApiXmlUtil.getString(input));
+		log.debug("Input for getShipNodeList "+XApiXmlUtil.getString(input));
 		Document doc = api.invoke(env, UrbanConstants.API_GET_SHIP_NODE_LIST, input);
-		System.out.println("Output for getShipNodeList "+XApiXmlUtil.getString(doc));
+		log.debug("Output for getShipNodeList "+XApiXmlUtil.getString(doc));
 
 		return doc;
 	}

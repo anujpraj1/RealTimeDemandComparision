@@ -68,8 +68,9 @@ public class UrbanCSVRoute extends RouteBuilder {
     public void configure() throws Exception {
 
         String inputFileURI = getAbsFileURIPath(absInDirectoryPath) + getInputQueryParams();
+        log.debug("Input FIle URI :: " + inputFileURI);
         String outputFileURI = getAbsFileURIPath(absOPDirectoryPath) + getOutputQueryParams();
-        System.out.println("Output FIle URI :: "+outputFileURI);
+        log.debug("Output FIle URI :: " + outputFileURI);
 
         String SEDA_END_POINT = getSedaUri(sedaQueue);
 
@@ -84,7 +85,7 @@ public class UrbanCSVRoute extends RouteBuilder {
         csvDataFormat.setLazyLoad(true);
         csvDataFormat.setSkipHeaderRecord(skipHeader);
 
-        log.debug("Here First");
+        log.debug("Here First Even before going to routes");
 
         //String fileUri = absInDirectoryPath+"?fileName="+inFileName+"&noop"+optNoop+"&maxMessagesPerPoll="+optMaxMessagesPerPoll+"&delay="+optDelay;
 
