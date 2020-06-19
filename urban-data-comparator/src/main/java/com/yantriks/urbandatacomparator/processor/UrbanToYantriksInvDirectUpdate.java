@@ -66,7 +66,6 @@ public class UrbanToYantriksInvDirectUpdate {
                 ObjectMapper jsonObjMapper = new ObjectMapper();
                 String httpBody = jsonObjMapper.writeValueAsString(yantriksReservationRequest);
                 log.debug("HttpBody :: " + httpBody);
-                System.out.println("reservationResponse "+reservationResponse);
                 reservationResponse = yantriksUtil.callYantriksAPI(reserveUrl.toString(), UrbanConstants.HTTP_METHOD_POST, httpBody, UrbanConstants.V_PRODUCT_YAS);
                 String response = yantriksUtil.determineErrorOrSuccessOnReservationPost(reservationResponse);
                 if (YantriksConstants.V_FAILURE.equals(response)) {

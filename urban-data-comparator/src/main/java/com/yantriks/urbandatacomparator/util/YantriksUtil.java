@@ -389,6 +389,12 @@ public class YantriksUtil {
         }
     }
 
+    /**
+     *
+     * @param strDate
+     * @return
+     * @throws ParseException
+     */
     public String getDateinUTC(String strDate) throws ParseException {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
         Date date1= sdf.parse(strDate);
@@ -400,7 +406,11 @@ public class YantriksUtil {
         return  formattedDate;
     }
 
-
+    /**
+     *
+     * @param filePath
+     * @return
+     */
     public static String getJSONFromFile(String filePath) {
 
         StringBuilder sb = new StringBuilder();

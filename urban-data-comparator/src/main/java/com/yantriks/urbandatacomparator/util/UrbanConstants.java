@@ -151,7 +151,7 @@ public class UrbanConstants {
     public static final String TT_RESERVE = "oms-reserve";
     public static final String TT_SCHEDULE = "oms-schedule";
     public static final String TT_RELEASE = "oms-release";
-    public static final String TT_TRANSFER = "omd-transfer";
+    public static final String TT_TRANSFER = "oms-transfer";
 
     public static final String E_ORDER_LINES = "OrderLines";
     public static final String E_ORDER_LINE = "OrderLine";

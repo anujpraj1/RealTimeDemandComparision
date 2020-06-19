@@ -1,7 +1,6 @@
 package com.yantriks.urbandatacomparator.processor;
 
 import com.sterlingcommerce.baseutil.SCXmlUtil;
-import com.yantra.yfc.dom.YFCDocument;
 import com.yantriks.urbandatacomparator.model.UrbanCsvData;
 import com.yantriks.urbandatacomparator.model.UrbanCsvOutputData;
 import com.yantriks.urbandatacomparator.sterlingapis.SterlingAPIDocumentCreator;
@@ -71,9 +70,7 @@ public class UrbanDataCompareProcessor implements Processor {
         Document getInventoryReservationList = null;
         Document inDoc = sterlingAPIDocumentCreator.createInDocForGetInvReservation(reservationId);
         try {
-            YFCDocument mockedGRLOutput = YFCDocument.getDocumentForXMLFile("D:\\getInventoryReservationOutputSample.xml");
-            System.out.println("getReservationList output :"+mockedGRLOutput);
-            getInventoryReservationList = mockedGRLOutput.getDocument();//sterlingAPIUtil.invokeSterlingAPI(inDoc, UrbanConstants.API_GET_INV_RESERVATION_LIST);
+            getInventoryReservationList = sterlingAPIUtil.invokeSterlingAPI(inDoc, UrbanConstants.API_GET_INV_RESERVATION_LIST);
             //getInventoryReservationList = sterlingGetInvListCall.executeGetInvListApi(reservationId);
         } catch (Exception e) {
             log.error("Exception Caught while calling getInventoryReservationList", e.getMessage());
@@ -87,9 +84,7 @@ public class UrbanDataCompareProcessor implements Processor {
                 log.debug("UrbanDataCompareProcessor: Reservation exist in Sterling which means order is not created hence needs to be checked against yantriks");
                 String reservationResponse = null;
                 try {
-                    reservationResponse =yantriksUtil.getJSONFromFile("D:\\getReservationOutputMocked.json");
-                    //yantriksUtil.callYantriksGetOrDeleteAPI(reservationUrl.toString(), UrbanConstants.HTTP_METHOD_GET, UrbanConstants.V_PRODUCT_YAS);
-//                    System.out.println("reservationResponse "+reservationResponse);
+                    reservationResponse =yantriksUtil.callYantriksGetOrDeleteAPI(reservationUrl.toString(), UrbanConstants.HTTP_METHOD_GET, UrbanConstants.V_PRODUCT_YAS);
                 } catch (Exception e) {
                     log.error("UrbanDataCompareProcessor: Yantriks Get Reservation failed");
                     reservationResponse = UrbanConstants.V_EXC_FAILURE;
@@ -119,9 +114,7 @@ public class UrbanDataCompareProcessor implements Processor {
                     Document getOrderInDoc = sterlingAPIDocumentCreator.createInDocForGetOrderList(enterpriseCode, orderId);
                     Document getOrderListOP = null;
                     try {
-                        YFCDocument getOLoutputMocked = YFCDocument.getDocumentForXMLFile("D:\\getOrderListMockedOutput.xml");
-                        getOrderListOP = getOLoutputMocked.getDocument();
-                       // sterlingAPIUtil.invokeSterlingAPI(getOrderInDoc, SCXmlUtil.createFromString(UrbanConstants.TEMPLATE_GET_ORDER_LIST), UrbanConstants.API_GET_ORDER_LIST);
+                        getOrderListOP = sterlingAPIUtil.invokeSterlingAPI(getOrderInDoc, SCXmlUtil.createFromString(UrbanConstants.TEMPLATE_GET_ORDER_LIST), UrbanConstants.API_GET_ORDER_LIST);
                         System.out.println(" getOrderListOP "+getOrderListOP);
                         //getOrderListOP = sterlingGetOrderListCall.executeGetOLListApi(orderId, enterpriseCode);
                     } catch (Exception e) {
@@ -137,13 +130,13 @@ public class UrbanDataCompareProcessor implements Processor {
                             log.info("UrbanDataCompareProcessor : Received Orders as part of getOrderList Call");
                             String reservationResponse = null;
                             try {
-                                reservationResponse = yantriksUtil.getJSONFromFile("D:\\getReservationOutputMocked.json");//yantriksUtil.callYantriksGetOrDeleteAPI(reservationUrl.toString(), UrbanConstants.HTTP_METHOD_GET, UrbanConstants.V_PRODUCT_YAS);
+                                reservationResponse = yantriksUtil.callYantriksGetOrDeleteAPI(reservationUrl.toString(), UrbanConstants.HTTP_METHOD_GET, UrbanConstants.V_PRODUCT_YAS);
                             } catch (Exception e) {
                                 log.error("Exception Caught while calling get Reservation : " + e.getMessage());
                                 log.error("Cause : " + e.getCause());
                                 reservationResponse = UrbanConstants.V_EXC_FAILURE;
                             }
-                            String response = "GOOD ";//yantriksUtil.determineErrorOrSuccessOnReservationPost(reservationResponse);
+                            String response = yantriksUtil.determineErrorOrSuccessOnReservationPost(reservationResponse);
                             log.debug("Response of determineErrorOrSuccessOnReservationPost : " + response);
                             if (UrbanConstants.V_FAILURE.equals(response)) {
                                 log.debug("UrbanDataCompareProcessor: Yantriks does not have reservation hence based on getOrderList call output updating yantriks");

@@ -110,7 +110,11 @@ public class UrbanToYantriksOrderDirectUpdate {
         return urbanCsvOutputData;
     }
 
-
+    /***
+     *
+     * @param yantriksInRequest
+     * @return
+     */
     private String determineTransactionType(String yantriksInRequest) {
 
         log.debug("eleOrder "+(yantriksInRequest.toString()));
@@ -121,17 +125,5 @@ public class UrbanToYantriksOrderDirectUpdate {
         else{
             return UrbanConstants.TT_RESERVE;
         }
-//        String maxOrderStatus = eleOrder.getAttribute(UrbanConstants.A_MAX_ORDER_STATUS);
-//        if (UrbanConstants.IM_LIST_ALLOCATED_STATUSES.contains(maxOrderStatus)) {
-//            return UrbanConstants.TT_RELEASE;
-//        } else if (UrbanConstants.IM_LIST_SCHEDULED_STATUSES.contains(maxOrderStatus)) {
-//            return UrbanConstants.TT_SCHEDULE;
-//        } else if (UrbanConstants.IM_LIST_OPEN_STATUSES.contains(maxOrderStatus)) {
-//            return UrbanConstants.TT_RESERVE;
-//        } else if (UrbanConstants.IM_LIST_BACKORDER_STATUSES.contains(maxOrderStatus)) {
-//            return UrbanConstants.TT_SCHEDULE;
-//        } else {
-//            return UrbanConstants.TT_RESERVE;
-//        }
     }
 }

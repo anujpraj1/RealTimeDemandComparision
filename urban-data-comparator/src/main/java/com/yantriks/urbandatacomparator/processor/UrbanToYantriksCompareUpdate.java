@@ -56,7 +56,6 @@ public class UrbanToYantriksCompareUpdate {
         String transactionType = UrbanConstants.TT_RESERVE;
         if (isUpdateFromInventoryReservation) {
             yantriksInRequest = urbanPopulateInventoryReservationRequest.createReservationRequestFromInventoryReservation(inDoc);
-            System.out.println("yantriksInRequest "+yantriksInRequest);
             orderId = "";
             enterpriseCode = "";
         } else {
@@ -157,7 +156,6 @@ public class UrbanToYantriksCompareUpdate {
                 try {
                     ObjectMapper jsonObjMapper = new ObjectMapper();
                     String httpBody = jsonObjMapper.writeValueAsString(yantriksInRequest);
-                    System.out.println("httpBody "+httpBody);
                     log.debug("HttpBody :: " + httpBody);
                     String response = yantriksUtil.callYantriksAPI(lineReserveUrl.toString(), UrbanConstants.HTTP_METHOD_POST, httpBody, UrbanConstants.V_PRODUCT_YAS);
                     if (YantriksConstants.V_FAILURE.equals(response)) {
@@ -206,7 +204,7 @@ public class UrbanToYantriksCompareUpdate {
     }
 
     private String determineTransactionType(String yantriksInRequest) {
-        log.debug("eleOrder "+(yantriksInRequest.toString()));
+        log.debug("yantriksInRequest "+(yantriksInRequest.toString()));
         if(yantriksInRequest.toString().contains("SCHEDULE_TO")){
             log.debug(UrbanConstants.TT_TRANSFER);
             return UrbanConstants.TT_TRANSFER;
@@ -214,20 +212,6 @@ public class UrbanToYantriksCompareUpdate {
         else{
             return UrbanConstants.TT_RESERVE;
         }
-//        String maxOrderStatus = eleOrder.getAttribute(UrbanConstants.A_MAX_ORDER_STATUS);
-
-
-//        if (UrbanConstants.IM_LIST_ALLOCATED_STATUSES.contains(maxOrderStatus)) {
-//            return UrbanConstants.TT_RELEASE;
-//        } else if (UrbanConstants.IM_LIST_SCHEDULED_STATUSES.contains(maxOrderStatus)) {
-//            return UrbanConstants.TT_SCHEDULE;
-//        } else if (UrbanConstants.IM_LIST_OPEN_STATUSES.contains(maxOrderStatus)) {
-//            return UrbanConstants.TT_RESERVE;
-//        } else if (UrbanConstants.IM_LIST_BACKORDER_STATUSES.contains(maxOrderStatus)) {
-//            return UrbanConstants.TT_SCHEDULE;
-//        } else {
-//            return UrbanConstants.TT_RESERVE;
-//        }
     }
 
     private boolean matchDemandLevelAttributes(YantriksReservationDemandTypeResponse currDemandResponse, YantriksReservationDemandTypeRequest demandRequestTomatch) {
