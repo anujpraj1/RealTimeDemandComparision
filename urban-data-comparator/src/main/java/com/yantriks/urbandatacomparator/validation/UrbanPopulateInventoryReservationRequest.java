@@ -1,5 +1,6 @@
 package com.yantriks.urbandatacomparator.validation;
 
+
 import com.sterlingcommerce.baseutil.SCXmlUtil;
 import com.yantriks.urbandatacomparator.model.YantriksLineReservationDetailsRequest;
 import com.yantriks.urbandatacomparator.model.YantriksLocationReservationDetailsRequest;
@@ -60,7 +61,7 @@ public class UrbanPopulateInventoryReservationRequest {
             Element eleItem = SCXmlUtil.getChildElement(currInvReservation, UrbanConstants.E_ITEM);
             String itemId = eleItem.getAttribute(UrbanConstants.A_ITEM_ID);
             String shipNode = currInvReservation.getAttribute(UrbanConstants.A_SHIP_NODE);
-            String locationType = yantriksUtil.getLocationType(currInvReservation.getAttribute(UrbanConstants.A_SHIP_NODE));
+            String locationType = "DC";// yantriksUtil.getLocationType(currInvReservation.getAttribute(UrbanConstants.A_SHIP_NODE));
             String shipDate = currInvReservation.getAttribute(UrbanConstants.A_SHIP_DATE);
             String qty = currInvReservation.getAttribute(UrbanConstants.A_QUANTITY);
             int qtyToPut = (int) Double.parseDouble(qty);

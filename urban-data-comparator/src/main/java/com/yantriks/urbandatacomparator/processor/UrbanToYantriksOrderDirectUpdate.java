@@ -61,7 +61,7 @@ public class UrbanToYantriksOrderDirectUpdate {
                 urbanCsvOutputData.setCompareAndGenerate(true);
                 urbanCsvOutputData.setReservationStatus("STATUSES_OUT_OF_RESERVATION");
             } else {
-                String transactionType = determineTransactionType(eleOrder);
+                String transactionType = determineTransactionType(yantriksReservationRequest.toString());
                 log.debug("CompareAndUpdate Flag is turned on, Hence calling yantriks api to update in Yantriks");
                 StringBuilder reserveUrl = new StringBuilder(UrbanConstants.YANTRIKS_RESERVE_URL);
                 reserveUrl = urbanURI.getReservationUrl(reserveUrl, UrbanConstants.SC_GLOBAL, transactionType,
@@ -111,18 +111,27 @@ public class UrbanToYantriksOrderDirectUpdate {
     }
 
 
-    private String determineTransactionType(Element eleOrder) {
-        String maxOrderStatus = eleOrder.getAttribute(UrbanConstants.A_MAX_ORDER_STATUS);
-        if (UrbanConstants.IM_LIST_ALLOCATED_STATUSES.contains(maxOrderStatus)) {
-            return UrbanConstants.TT_RELEASE;
-        } else if (UrbanConstants.IM_LIST_SCHEDULED_STATUSES.contains(maxOrderStatus)) {
-            return UrbanConstants.TT_SCHEDULE;
-        } else if (UrbanConstants.IM_LIST_OPEN_STATUSES.contains(maxOrderStatus)) {
-            return UrbanConstants.TT_RESERVE;
-        } else if (UrbanConstants.IM_LIST_BACKORDER_STATUSES.contains(maxOrderStatus)) {
-            return UrbanConstants.TT_SCHEDULE;
-        } else {
+    private String determineTransactionType(String yantriksInRequest) {
+
+        log.debug("eleOrder "+(yantriksInRequest.toString()));
+        if(yantriksInRequest.toString().contains("SCHEDULE_TO")){
+            log.debug(UrbanConstants.TT_TRANSFER);
+            return UrbanConstants.TT_TRANSFER;
+        }
+        else{
             return UrbanConstants.TT_RESERVE;
         }
+//        String maxOrderStatus = eleOrder.getAttribute(UrbanConstants.A_MAX_ORDER_STATUS);
+//        if (UrbanConstants.IM_LIST_ALLOCATED_STATUSES.contains(maxOrderStatus)) {
+//            return UrbanConstants.TT_RELEASE;
+//        } else if (UrbanConstants.IM_LIST_SCHEDULED_STATUSES.contains(maxOrderStatus)) {
+//            return UrbanConstants.TT_SCHEDULE;
+//        } else if (UrbanConstants.IM_LIST_OPEN_STATUSES.contains(maxOrderStatus)) {
+//            return UrbanConstants.TT_RESERVE;
+//        } else if (UrbanConstants.IM_LIST_BACKORDER_STATUSES.contains(maxOrderStatus)) {
+//            return UrbanConstants.TT_SCHEDULE;
+//        } else {
+//            return UrbanConstants.TT_RESERVE;
+//        }
     }
 }
