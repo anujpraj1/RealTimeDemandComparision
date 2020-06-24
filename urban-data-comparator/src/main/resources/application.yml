@@ -3,14 +3,14 @@ server:
 
 data:
   input:
-    absolutedirectory: C:\tmp\in
+    absolutedirectory: D:\temp
     filename: sample.csv
     option:
       noop: true
       maxMessagesPerPoll: 1
       delay: 1000
   output:
-    absolutedirectory: C:\tmp\out
+    absolutedirectory: D:\temp
     filename: outsample.csv
     option:
       fileexists: Append
@@ -31,7 +31,7 @@ logging:
 urban:
   sterling:
     protocol: http
-    url: sushqssteriap01.urbanout.com:8080
+    url: 10.75.27.87:8080
     apitester:
       userid: admin
       password: password
@@ -42,7 +42,7 @@ urban:
     protocol: https
     timeout: 10000
     availability:
-        host: staging-yantriks-api.urbncloud.com/availability
+        host: https://34.102.178.188
         port:
     inventorylite:
         host: localhost:8096

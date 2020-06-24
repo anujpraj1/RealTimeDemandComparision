@@ -32,7 +32,7 @@ public class UrbanConstants {
             "\t<Order OrderHeaderKey=\"\" OrderNo=\"\" EnterpriseCode=\"\">\n" +
             "\t<Extn ExtnReservationID=\"\" />\n" +
             "\t\t<OrderLines>\n" +
-            "\t\t\t<OrderLine FulfillmentType=\"\" PrimeLineNo=\"\" DeliveryMethod=\"\" OrderedQty=\"\" ShipNode=\"\" ReqShipDate=\"\">\n" +
+            "\t\t\t<OrderLine FulfillmentType=\"\" PrimeLineNo=\"\" LineType=\"\" DeliveryMethod=\"\"  OrderedQty=\"\" ShipNode=\"\" ReqShipDate=\"\">\n" +
             "\t\t\t\t<Item ItemID=\"\" UnitOfMeasure=\"\"/>\n" +
             "\t\t\t\t<PersonInfoShipTo ZipCode=\"\"/>\n" +
             "\t\t\t\t<Schedules>\n" +
@@ -41,7 +41,7 @@ public class UrbanConstants {
             "\t\t\t\t</Schedules>\n" +
             "\t\t\t\t<OrderStatuses>\n" +
             "\t\t\t\t\t<OrderStatus OrderHeaderKey=\"\" OrderLineKey=\"\" OrderLineScheduleKey=\"\" OrderReleaseKey=\"\" OrderReleaseStatusKey=\"\" PipelineKey=\"\" ReceivingNode=\"\" ShipNode=\"\" Status=\"\" StatusDate=\"\" StatusDescription=\"\" StatusQty=\"\" StatusReason=\"\" TotalQuantity=\"\">\n" +
-            "\t\t\t\t\t\t<Details ExpectedDeliveryDate=\"\" ExpectedShipmentDate=\"\" OverrideItemID=\"\" OverrideProductClass=\"\" OverrideUnitOfMeasure=\"\" ReceivingNode=\"\" ShipByDate=\"\" ShipNode=\"\" TagNumber=\"\">\n" +
+            "\t\t\t\t\t\t<Details ExpectedDeliveryDate=\"\" ExpectedShipmentDate=\"\" ProcureFromNode=\"\"  OverrideItemID=\"\" OverrideProductClass=\"\" OverrideUnitOfMeasure=\"\" ReceivingNode=\"\" ShipByDate=\"\" ShipNode=\"\" TagNumber=\"\">\n" +
             "\t\t\t\t\t\t</Details>\n" +
             "\t\t\t\t\t\t<OrderStatusTranQuantity StatusQty=\"\" TotalQuantity=\"\" TransactionalUOM=\"\"/>\n" +
             "\t\t\t\t\t\t<ShipNode Description=\"\" IdentifiedByParentAs=\"\" OwnerKey=\"\"/>\n" +
@@ -107,6 +107,7 @@ public class UrbanConstants {
     public static final String A_EXPIRATION_DATE = "ExpirationDate";
 
     public static final String V_SECONDS = "SECONDS";
+    public static final String V_MINUTES = "MINUTES";
     public static final String V_RT_URBN_USER = "RTURBNUSER";
     public static final String V_TZ_UTC = "UTC";
     public static final String FT_SHIP = "Ship";
@@ -150,6 +151,7 @@ public class UrbanConstants {
     public static final String TT_RESERVE = "oms-reserve";
     public static final String TT_SCHEDULE = "oms-schedule";
     public static final String TT_RELEASE = "oms-release";
+    public static final String TT_TRANSFER = "oms-transfer";
 
     public static final String E_ORDER_LINES = "OrderLines";
     public static final String E_ORDER_LINE = "OrderLine";
