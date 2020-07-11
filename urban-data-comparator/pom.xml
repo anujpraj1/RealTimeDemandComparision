@@ -16,7 +16,7 @@
 
 	<properties>
 		<java.version>1.8</java.version>
-		<sterlingjardir>C:\sterling95\external_deployments\smcfswar\WEB-INF\lib</sterlingjardir>
+		<sterlingjardir>C:\Users\dhanush.kuber\Downloads\lib\lib</sterlingjardir>
 	</properties>
 
 	<dependencies>

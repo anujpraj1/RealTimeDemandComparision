@@ -145,7 +145,7 @@ public class UrbanPopulateOrderReservationRequest {
                         }
                     });
             YantriksLineReservationDetailsRequest yantriksLineReservationDetailsRequest = YantriksLineReservationDetailsRequest.builder()
-                    .fulfillmentService(fulfillmentService)
+                   // .fulfillmentService(fulfillmentService)
                     .fulfillmentType(UrbanConstants.FT_SHIP)
                     .lineId(currOrderLine.getAttribute(UrbanConstants.A_PRIME_LINE_NO))
                     .productId(eleItem.getAttribute(UrbanConstants.A_ITEM_ID))
