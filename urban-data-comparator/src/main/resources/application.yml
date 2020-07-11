@@ -31,7 +31,7 @@ logging:
 urban:
   sterling:
     protocol: http
-    url: sushqssteriap01.urbanout.com:8080
+    url: 10.75.27.87:8080
     apitester:
       userid: admin
       password: password

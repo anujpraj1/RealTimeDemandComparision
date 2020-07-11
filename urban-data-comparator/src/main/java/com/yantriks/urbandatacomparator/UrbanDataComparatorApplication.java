@@ -12,5 +12,4 @@ public class UrbanDataComparatorApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(UrbanDataComparatorApplication.class, args);
 	}
-
 }

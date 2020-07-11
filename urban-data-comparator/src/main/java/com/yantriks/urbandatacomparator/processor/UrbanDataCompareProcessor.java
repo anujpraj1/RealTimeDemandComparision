@@ -78,13 +78,13 @@ public class UrbanDataCompareProcessor implements Processor {
             yantriksUtil.defaultIncorrectDataToPopulate(csvWriteData, reservationId, enterpriseCode, orderId, UrbanConstants.ERR_GET_INV_RESERVATION_FAILED);
             isInvAPIFailed = true;
         }
-        System.out.println("DATA :: "+SCXmlUtil.getString(getInventoryReservationList));
+//        System.out.println("DATA :: "+SCXmlUtil.getString(getInventoryReservationList));
         if (!isInvAPIFailed) {
             if (getInventoryReservationList.getDocumentElement().hasChildNodes()) {
                 log.debug("UrbanDataCompareProcessor: Reservation exist in Sterling which means order is not created hence needs to be checked against yantriks");
                 String reservationResponse = null;
                 try {
-                    reservationResponse = yantriksUtil.callYantriksGetOrDeleteAPI(reservationUrl.toString(), UrbanConstants.HTTP_METHOD_GET, UrbanConstants.V_PRODUCT_YAS);
+                    reservationResponse =yantriksUtil.callYantriksGetOrDeleteAPI(reservationUrl.toString(), UrbanConstants.HTTP_METHOD_GET, UrbanConstants.V_PRODUCT_YAS);
                 } catch (Exception e) {
                     log.error("UrbanDataCompareProcessor: Yantriks Get Reservation failed");
                     reservationResponse = UrbanConstants.V_EXC_FAILURE;
@@ -115,6 +115,7 @@ public class UrbanDataCompareProcessor implements Processor {
                     Document getOrderListOP = null;
                     try {
                         getOrderListOP = sterlingAPIUtil.invokeSterlingAPI(getOrderInDoc, SCXmlUtil.createFromString(UrbanConstants.TEMPLATE_GET_ORDER_LIST), UrbanConstants.API_GET_ORDER_LIST);
+                        System.out.println(" getOrderListOP "+getOrderListOP);
                         //getOrderListOP = sterlingGetOrderListCall.executeGetOLListApi(orderId, enterpriseCode);
                     } catch (Exception e) {
                         log.error("Exception while calling Sterling API : " + e.getMessage() + "Cause : " + e.getCause());

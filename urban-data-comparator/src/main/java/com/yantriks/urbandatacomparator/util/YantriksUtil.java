@@ -37,7 +37,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -574,5 +573,44 @@ public class YantriksUtil {
             log.info("YantriksUtil: Compare And Update Data");
             dataFromCompareAndUpdate(csvWriteData, urbanCsvOutputData);
         }
+    }
+
+    /**
+     *
+     * @param strDate
+     * @return
+     * @throws ParseException
+     */
+    public String getDateinUTC(String strDate) throws ParseException {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
+        Date date1= sdf.parse(strDate);
+        log.debug("shipDate "+strDate);
+        SimpleDateFormat sdf1 = new SimpleDateFormat("yyyy-MM-dd");
+        TimeZone tz = TimeZone.getTimeZone("UTC");
+        sdf1.setTimeZone(tz);
+        String formattedDate = (sdf1.format(date1));
+        return  formattedDate;
+    }
+
+    /**
+     *
+     * @param filePath
+     * @return
+     */
+    public static String getJSONFromFile(String filePath) {
+
+        StringBuilder sb = new StringBuilder();
+        try (BufferedReader br = Files.newBufferedReader(Paths.get(filePath))) {
+
+            // read line by line
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line).append("\n");
+            }
+
+        } catch (IOException e) {
+            System.err.format("IOException: %s%n", e);
+        }
+        return sb.toString();
     }
 }

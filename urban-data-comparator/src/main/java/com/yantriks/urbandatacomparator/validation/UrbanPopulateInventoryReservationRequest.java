@@ -1,5 +1,6 @@
 package com.yantriks.urbandatacomparator.validation;
 
+
 import com.sterlingcommerce.baseutil.SCXmlUtil;
 import com.yantriks.urbandatacomparator.model.YantriksLineReservationDetailsRequest;
 import com.yantriks.urbandatacomparator.model.YantriksLocationReservationDetailsRequest;
