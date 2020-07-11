@@ -214,7 +214,7 @@ public class UrbanPopulateOrderReservationRequest {
                  strFulfillmentType = UrbanConstants.FT_SHIP;
              }
             YantriksLineReservationDetailsRequest yantriksLineReservationDetailsRequest = YantriksLineReservationDetailsRequest.builder()
-                    .fulfillmentService(fulfillmentService)
+                   // .fulfillmentService(fulfillmentService)
                     .fulfillmentType(strFulfillmentType)
                     .lineId(currOrderLine.getAttribute(UrbanConstants.A_PRIME_LINE_NO))
                     .productId(eleItem.getAttribute(UrbanConstants.A_ITEM_ID))

@@ -2,12 +2,15 @@ package com.yantriks.urbandatacomparator.processor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sterlingcommerce.baseutil.SCXmlUtil;
+import com.yantra.yfc.core.YFCObject;
+import com.yantra.yfs.core.YFSSystem;
 import com.yantriks.urbandatacomparator.model.*;
 import com.yantriks.urbandatacomparator.model.responses.YantriksAvailabilityErrorResponse;
 import com.yantriks.urbandatacomparator.util.UrbanConstants;
 import com.yantriks.urbandatacomparator.util.YantriksUtil;
 import com.yantriks.urbandatacomparator.validation.UrbanPopulateInventoryReservationRequest;
 import com.yantriks.urbandatacomparator.validation.UrbanPopulateOrderReservationRequest;
+import com.yantriks.yih.adapter.util.YantriksCommonUtil;
 import com.yantriks.yih.adapter.util.YantriksConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +32,9 @@ public class UrbanToYantriksCompareUpdate {
 
     @Value("${data.mode.compareupdate}")
     private Boolean compareAndUpdate;
+
+    @Value("${apicall.newHttpClientCall}")
+    private Boolean boolnewHttpClientCall;
 
     @Autowired
     YantriksUtil yantriksUtil;
@@ -56,6 +62,7 @@ public class UrbanToYantriksCompareUpdate {
         String transactionType = UrbanConstants.TT_RESERVE;
         if (isUpdateFromInventoryReservation) {
             yantriksInRequest = urbanPopulateInventoryReservationRequest.createReservationRequestFromInventoryReservation(inDoc);
+//            log.
             orderId = "";
             enterpriseCode = "";
         } else {
@@ -95,9 +102,15 @@ public class UrbanToYantriksCompareUpdate {
                                 Map<String, YantriksReservationDemandTypeRequest> mapdemandTypeAndDemands = yantriksReservationDemandTypeRequests.stream()
                                         .collect(Collectors.toMap(YantriksReservationDemandTypeRequest::getUniqueKey, yantriksDemandRequest -> yantriksDemandRequest));
                                 List<YantriksReservationDemandTypeResponse> yantriksReservationDemandTypeResponses = currLocationResponse.getDemands();
+                                log.debug("content of map :: "+mapdemandTypeAndDemands.toString());
                                 for (YantriksReservationDemandTypeResponse currDemandResponse : yantriksReservationDemandTypeResponses) {
-                                    if (mapdemandTypeAndDemands.containsKey(currDemandResponse.getDemandType())) {
-                                        YantriksReservationDemandTypeRequest demandRequestTomatch = mapdemandTypeAndDemands.get(currDemandResponse.getDemandType());
+                                    log.debug("currDemandResponse "+currDemandResponse.toString());
+                                    log.debug("unique key : "+currDemandResponse.getUniqueKey());//.concat(":").concat(currDemandResponse.getReservationDate()));
+                                    log.info(" reservation date "+currDemandResponse.getReservationDate());
+                                   // if (mapdemandTypeAndDemands.containsKey(currDemandResponse.getDemandType().concat(":").concat(currDemandResponse.getReservationDate()))) {
+                                    if (mapdemandTypeAndDemands.containsValue(currDemandResponse.getUniqueKey())) {
+                                        YantriksReservationDemandTypeRequest demandRequestTomatch = mapdemandTypeAndDemands
+                                                .get(currDemandResponse.getDemandType().concat(":").concat(currDemandResponse.getReservationDate()));
                                         if (matchDemandLevelAttributes(currDemandResponse, demandRequestTomatch)) {
                                             log.debug("Current Demand is matching");
                                         } else {
@@ -152,12 +165,37 @@ public class UrbanToYantriksCompareUpdate {
             if (!areBothReservationsSame) {
                 StringBuilder lineReserveUrl = new StringBuilder(UrbanConstants.YANTRIKS_LINE_RESERVE_URL);
                 lineReserveUrl = urbanURI.getReservationUrl(lineReserveUrl, UrbanConstants.SC_GLOBAL, transactionType,
-                        true, false, true, false);
+                        true, false, true, true);
                 try {
                     ObjectMapper jsonObjMapper = new ObjectMapper();
                     String httpBody = jsonObjMapper.writeValueAsString(yantriksInRequest);
                     log.debug("HttpBody :: " + httpBody);
-                    String response = yantriksUtil.callYantriksAPI(lineReserveUrl.toString(), UrbanConstants.HTTP_METHOD_POST, httpBody, UrbanConstants.V_PRODUCT_YAS);
+                    log.info("lineReserveUrl.toString()  "+lineReserveUrl.toString());
+
+                    String inventoryAggURL = YantriksConstants.API_URL_INV_AVL;
+                    boolean considerCapacityParam = false;
+                    boolean considerGtinParam = false;
+                    String apiUrl = inventoryAggURL + "?considerCapacity=" + considerCapacityParam + "&considerGtin=" + considerGtinParam + "&showAtpForHorizon" + "=" + true;
+                    httpBody = httpBody.concat("\n   " + reservationResponse);
+
+                    if (log.isDebugEnabled())
+                        log.debug("httpBody is : " + httpBody);
+
+
+                    String content = httpBody.substring(1, httpBody.length() - 1);
+                    String newHttpClientCall = "";//YFSSystem.getProperty(YantriksConstants.PROP_ENABLE_CLOSEABLE_HTTP_CLIENT);
+                    String response = null;
+                    if (!YFCObject.isVoid(newHttpClientCall)) {
+                        boolnewHttpClientCall = Boolean.valueOf(newHttpClientCall);
+                    }
+                    log.debug("Boolean Value : "+boolnewHttpClientCall);
+                    if (boolnewHttpClientCall) {
+                        log.debug("Boolean value to call new HTTP Client is true hence calling via closeable client");
+                        response = yantriksUtil.callYantriksAPIV3(apiUrl, YantriksConstants.YIH_REQ_METHOD_POST,  httpBody,  YantriksCommonUtil.getAvailabilityProduct());
+                    }
+                    else{
+                         response = yantriksUtil.callYantriksAPI(lineReserveUrl.toString(), UrbanConstants.HTTP_METHOD_PUT, httpBody, UrbanConstants.V_PRODUCT_YAS);
+                    }
                     if (YantriksConstants.V_FAILURE.equals(response)) {
                         log.debug("UrbanToYantriksOrderDirectUpdate: Yantriks Reservation Call failed with FAILURE response hence will write the request in file");
                         log.debug("UrbanToYantriksOrderDirectUpdate: Writing the request in file");
@@ -215,6 +253,8 @@ public class UrbanToYantriksCompareUpdate {
     }
 
     private boolean matchDemandLevelAttributes(YantriksReservationDemandTypeResponse currDemandResponse, YantriksReservationDemandTypeRequest demandRequestTomatch) {
+        log.debug("currDemandResponse "+currDemandResponse.toString());
+        log.debug("demandRequestTomatch "+demandRequestTomatch.toString());
         return currDemandResponse.getQuantity() == demandRequestTomatch.getQuantity() &&
                 currDemandResponse.getReservationDate().equals(demandRequestTomatch.getReservationDate()) &&
                 currDemandResponse.getSegment().equals(demandRequestTomatch.getSegment());
@@ -227,7 +267,7 @@ public class UrbanToYantriksCompareUpdate {
     private boolean matchLineLevelAttributes(YantriksLineReservationDetailsResponse currLineResponse, YantriksLineReservationDetailsRequest requestToMatch) {
         return currLineResponse.getProductId().equals(requestToMatch.getProductId()) &&
                 currLineResponse.getUom().equals(requestToMatch.getUom()) &&
-                currLineResponse.getFulfillmentType().equals(requestToMatch.getFulfillmentType()) &&
-                currLineResponse.getFulfillmentService().equals(requestToMatch.getFulfillmentService());
+                currLineResponse.getFulfillmentType().equals(requestToMatch.getFulfillmentType()) ;
+                //&& currLineResponse.getFulfillmentService().equals(requestToMatch.getFulfillmentService());
     }
 }

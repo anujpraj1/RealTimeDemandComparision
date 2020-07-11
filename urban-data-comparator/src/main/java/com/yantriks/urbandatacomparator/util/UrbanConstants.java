@@ -189,4 +189,18 @@ public class UrbanConstants {
     public static final String MSG_SUCCESS = "SUCCESS";
     public static final String MSG_NO_UPDATE_REQUIRED = "MATCH_NO_UPDATE";
     public static final String A_MAX_ORDER_STATUS = "MaxOrderStatus";
+
+    //
+    public static final String JSON_ATTR_MESSAGE ="message";
+    public static final String JSON_ATTR_ERROR ="error";
+    public static final ImmutableList IM_LIST_ENTITY_NOT_EXISTS = ImmutableList.of("ENTITY_DOES_NOT_EXIST", "Entity does not exist");
+    public static final String V_ENTITY_NOT_EXISTS = "ENTITY_NOT_EXISTS";
+    public static final String V_NO_CONTENT_FOUND = "NO_CONTENT_FOUND";
+    public static final ImmutableList<String> IM_LIST_GET_RESERVATION_FAILURES = ImmutableList.of("FAILURE", "NON_RETRY_EXCEPTION");
+
+
+
+
+
+
 }

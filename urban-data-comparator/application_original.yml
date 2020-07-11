@@ -42,14 +42,14 @@ urban:
     protocol: https
     timeout: 10000
     availability:
-      host: staging-yantriks-api.urbncloud.com/availability #yantriks-api.urbncloud.com/availability #34.102.178.188
-      port:
+        host: yantriks-dev-availability-api01.urbn.com #34.102.178.188
+        port:
     inventorylite:
-      host: localhost
-      port: 8096
+        host: localhost
+        port: 8096
     masterdata:
-      host: localhost
-      port: 8094
+        host: localhost
+        port: 8094
 
 yantriks:
   default:
@@ -69,7 +69,7 @@ apicall:
 
 
 security:
-  secretKey: c3VwZXJzZWNyZXRzdHJpbmdmb3JzdGFnaW5nc3Rlcmxpbmc
+  secretKey: da53d169065e21d726190c529d2c28f6a3b41ded45b5b382c4c23d139faebe95
   skid: STERLING-1
   expireTime: 3600
 

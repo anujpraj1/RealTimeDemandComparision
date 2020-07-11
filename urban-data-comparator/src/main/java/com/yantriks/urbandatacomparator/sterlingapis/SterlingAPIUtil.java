@@ -70,6 +70,9 @@ public class SterlingAPIUtil {
             overrideProperties.put(UrbanConstants.CONST_YIF_HTTP_API_URL,
                     protocol + "://" + url + "/smcfs/interop/InteropHttpServlet?&YFSEnvironment.userId=" + userID
                             + "&YFSEnvironment.password=" + password);
+            String apiTest =  protocol + "://" + url + "/smcfs/interop/InteropHttpServlet?&YFSEnvironment.userId=" + userID
+                    + "&YFSEnvironment.password=" + password;
+            log.debug("URL being invoked "+apiTest);
             YFSEnvironment environment = YIFClientFactory.getInstance().getApi(UrbanConstants.CONST_CAPS_HTTP, overrideProperties)
                     .createEnvironment(envParams);
             environment.setRollbackOnly(true);

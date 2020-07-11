@@ -12,9 +12,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
@@ -45,13 +46,14 @@ public class UrbanDataCompareAppConfig {
         startCamelContext();
     }
 
-    private void deleteContentOfOutputFile() throws FileNotFoundException {
+    private void deleteContentOfOutputFile() throws IOException, InterruptedException {
         String fileName = absOPDirectoryPath+"\\"+outFileName;
         log.info("File with path : "+fileName);
         File file = new File(fileName);
         PrintWriter writer = new PrintWriter(file);
         writer.print("");
         writer.println("EXTN_RESERVATIONID|ENTERPRISE_CODE|ORDERID|RESPONSE_CODE/ERROR_RESPONSE|ERROR|MESSAGE");
+        writer.flush();
         writer.close();
     }
 
