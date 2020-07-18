@@ -165,6 +165,7 @@ public class UrbanConstants {
     public static final String A_PRIME_LINE_NO = "PrimeLineNo";
     public static final String EXTN_RESERVATION_ID = "ExtnReservationID";
 
+    
     // Statuses to be utilized for Demands
     public static final ImmutableList<String> IM_LIST_SHIPPED_STATUSES = ImmutableList.of("3700","3700.00.200","9000","3700.01");
     public static final ImmutableList<String> IM_LIST_ALLOCATED_STATUSES = ImmutableList.of("3350", "3200");
