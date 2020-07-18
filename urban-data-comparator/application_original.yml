@@ -43,6 +43,7 @@ urban:
     timeout: 10000
     availability:
         host: yantriks-dev-availability-api01.urbn.com #34.102.178.188
+       
         port:
     inventorylite:
         host: localhost
