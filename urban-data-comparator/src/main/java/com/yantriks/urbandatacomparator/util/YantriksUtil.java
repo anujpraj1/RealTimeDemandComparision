@@ -37,7 +37,10 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -87,6 +90,10 @@ public class YantriksUtil {
             return "";
         }
         String outputStr = "";
+//        boolean isHttpMethodDelete = false;
+//        if("DELETE".equalsIgnoreCase(httpMethod)){
+//            isHttpMethodDelete = true;
+//        }
 
         URL url = null;
         HttpURLConnection conn = null;
@@ -236,19 +243,37 @@ public class YantriksUtil {
                 log.debug("Output from Server ...." + conn.toString());
             }
             log.debug("Response Code Received :: "+conn.getResponseCode());
-            if (conn.getResponseCode() != 200 && conn.getResponseCode() !=201) {
+            if (conn.getResponseCode() != 200 && conn.getResponseCode() !=201
+                    && conn.getResponseCode()!=204 && conn.getResponseCode()!=400) {
                 log.info("We have not received response code as 200 or 201 hence will return the output from errorStream");
-                BufferedReader br = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
+                log.debug("Output String returned from Server :: "+outputStr);
+                return "FAILURE";
+            }
 
+            if(conn.getResponseCode()==204){
+                log.info("No content or record found in yantriks");
+                log.info("Hence directUpdate needs to be done to yantriks , returning \"\" ");
+                return "";
+            }
+
+            if(conn.getResponseCode()==400){
+                log.info("Statud received "+conn.getResponseCode());
+                BufferedReader br = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
                 String outputLine = null;
                 while ((outputLine = br.readLine()) != null) {
                     outputStr = outputStr.concat(outputLine);
                 }
-                log.debug("Output String returned from Server :: "+outputStr);
-                return outputStr;
-            }
-            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                if(outputStr.contains("NOT_ENOUGH_ATP")){
+                    log.debug("NOT_ENOUGH_ATP");
+                    return "NOT_ENOUGH_ATP";
+                }
+                else{
+                    return "FAILURE";
+                }
 
+            }
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
             String outputLine = null;
             while ((outputLine = br.readLine()) != null) {
                 outputStr = outputStr.concat(outputLine);
@@ -420,7 +445,9 @@ public class YantriksUtil {
 
     public String getLocationType(String locationId) throws Exception {
         Document getShipNodeInDoc = sterlingAPIDocumentCreator.createInDocForGetShipNodeList(locationId);
-        Document shipNodeList = sterlingAPIUtil.invokeSterlingAPI(getShipNodeInDoc, SCXmlUtil.createFromString(UrbanConstants.TEMPLATE_GET_SHIPNODE_LIST), UrbanConstants.API_GET_SHIP_NODE_LIST);
+        Document shipNodeList = sterlingAPIUtil.invokeSterlingAPI(getShipNodeInDoc,
+                SCXmlUtil.createFromString(UrbanConstants.TEMPLATE_GET_SHIPNODE_LIST),
+                UrbanConstants.API_GET_SHIP_NODE_LIST);
         //Document orgList = sterlingGetOrganizationListCall.executeGetOrganizationListCall(locationId);
         //Element eleOrganization = SCXmlUtil.getChildElement(shipNodeList.getDocumentElement(), UrbanConstants.ELE_SHIPNODE);
         Element eleShipNode = SCXmlUtil.getChildElement(shipNodeList.getDocumentElement(), UrbanConstants.A_SHIP_NODE);
@@ -519,7 +546,10 @@ public class YantriksUtil {
             return UrbanConstants.V_FAILURE;
         } else if (UrbanConstants.V_EXC_FAILURE.equals(reservationRestCallOutput)) {
             return UrbanConstants.V_EXC_FAILURE;
-        } else {
+        } else if(reservationRestCallOutput.equals(UrbanConstants.NOT_ENOUGH_ATP)){
+            return UrbanConstants.NOT_ENOUGH_ATP;
+        }
+        else {
             JSONObject outputObj = new JSONObject(reservationRestCallOutput);
             log.debug("Output Object :: "+outputObj.toString());
             log.debug("Status Check : "+outputObj.containsKey("status"));

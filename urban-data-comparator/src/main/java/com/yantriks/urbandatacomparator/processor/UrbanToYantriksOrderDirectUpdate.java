@@ -85,7 +85,17 @@ public class UrbanToYantriksOrderDirectUpdate {
                         urbanCsvOutputData.setReservationResponseCode(yantriksAvailabilityErrorResponse.getStatus());
                         urbanCsvOutputData.setError(yantriksAvailabilityErrorResponse.getError());
                         urbanCsvOutputData.setMessage(yantriksAvailabilityErrorResponse.getMessage());
-                    } else {
+                    }
+                    else if(UrbanConstants.NOT_ENOUGH_ATP.equals(response)){
+                        urbanCsvOutputData.setExtnReservationId(yantriksReservationRequest.getOrderId());
+                        urbanCsvOutputData.setOrderId(eleOrder.getAttribute(YantriksConstants.ORDER_NO));
+                        urbanCsvOutputData.setEnterpriseCode(eleOrder.getAttribute(YantriksConstants.A_ENTERPRISE_CODE));
+                        urbanCsvOutputData.setCompareAndGenerate(false);
+                        urbanCsvOutputData.setReservationResponseCode(UrbanConstants.RC_400);
+                        urbanCsvOutputData.setError("BAD_REQUEST");
+                        urbanCsvOutputData.setMessage(UrbanConstants.NOT_ENOUGH_ATP);
+                    }
+                    else {
                         urbanCsvOutputData.setExtnReservationId(yantriksReservationRequest.getOrderId());
                         urbanCsvOutputData.setOrderId(eleOrder.getAttribute(YantriksConstants.ORDER_NO));
                         urbanCsvOutputData.setEnterpriseCode(eleOrder.getAttribute(YantriksConstants.A_ENTERPRISE_CODE));

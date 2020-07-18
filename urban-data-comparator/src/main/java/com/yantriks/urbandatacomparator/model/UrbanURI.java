@@ -1,6 +1,8 @@
 package com.yantriks.urbandatacomparator.model;
 
 import com.yantriks.urbandatacomparator.util.UrbanConstants;
+import com.yantriks.urbandatacomparator.util.YantriksUtil;
+import com.yantriks.yih.adapter.util.YantriksConstants;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
@@ -47,6 +49,8 @@ public class UrbanURI {
     public String getAvailabilityURL(String urlSuffix) {
         StringBuilder sb = new StringBuilder();
         sb.append(yantriksProtocol);
+//        int index = availabilityHost.toString().indexOf("/");
+//        availabilityHost =  availabilityHost.substring(0,index);
         sb.append("://");
         if (availabilityPort == null || availabilityPort.isEmpty()) {
             sb.append(availabilityHost);
@@ -114,4 +118,18 @@ public class UrbanURI {
         lineReserveUrl.append(ignoreAvailabilityCheck);
         return lineReserveUrl;
     }
+
+    public StringBuilder getReservationURLForCancelReservation(StringBuilder reservationURL ,String strOrgId, String strOrderNo , boolean strRestoreCapacity){
+
+        reservationURL.append("/");
+        reservationURL.append(strOrgId);
+        reservationURL.append("/");
+        reservationURL.append(strOrderNo);
+        reservationURL.append("?");
+        reservationURL.append(YantriksConstants.QUERY_PARAM_RESTORE_CAPACITY);
+        reservationURL.append("=");
+        reservationURL.append(strRestoreCapacity);
+        return reservationURL;
+    }
+
 }

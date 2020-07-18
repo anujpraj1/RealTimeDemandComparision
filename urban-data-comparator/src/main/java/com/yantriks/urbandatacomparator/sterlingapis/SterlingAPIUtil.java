@@ -80,6 +80,7 @@ public class SterlingAPIUtil {
         } catch (Exception e) {
             log.error("Exception Caught while creating environment");
             log.error(e.getMessage());
+//            throw e;
         }
         return null;
     }

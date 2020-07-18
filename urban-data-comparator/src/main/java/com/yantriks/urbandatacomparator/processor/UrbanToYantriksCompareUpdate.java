@@ -12,6 +12,7 @@ import com.yantriks.urbandatacomparator.validation.UrbanPopulateInventoryReserva
 import com.yantriks.urbandatacomparator.validation.UrbanPopulateOrderReservationRequest;
 import com.yantriks.yih.adapter.util.YantriksCommonUtil;
 import com.yantriks.yih.adapter.util.YantriksConstants;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,6 +37,9 @@ public class UrbanToYantriksCompareUpdate {
     @Value("${apicall.newHttpClientCall}")
     private Boolean boolnewHttpClientCall;
 
+    @Value("${yantriks.default.orgid}")
+    private String orgId;
+
     @Autowired
     YantriksUtil yantriksUtil;
 
@@ -51,7 +55,7 @@ public class UrbanToYantriksCompareUpdate {
     @Autowired
     UrbanCsvOutputData urbanCsvOutputData;
 
-    public UrbanCsvOutputData compareReservationsAndUpdate(Document inDoc, String reservationResponse, boolean isUpdateFromInventoryReservation) throws Exception {
+    public UrbanCsvOutputData compareReservationsAndUpdate(Document inDoc, String reservationResponse, boolean isUpdateFromInventoryReservation,String reservationId) throws Exception {
 
         String orderId = null;
         String enterpriseCode = null;
@@ -62,7 +66,6 @@ public class UrbanToYantriksCompareUpdate {
         String transactionType = UrbanConstants.TT_RESERVE;
         if (isUpdateFromInventoryReservation) {
             yantriksInRequest = urbanPopulateInventoryReservationRequest.createReservationRequestFromInventoryReservation(inDoc);
-//            log.
             orderId = "";
             enterpriseCode = "";
         } else {
@@ -110,7 +113,7 @@ public class UrbanToYantriksCompareUpdate {
                                    // if (mapdemandTypeAndDemands.containsKey(currDemandResponse.getDemandType().concat(":").concat(currDemandResponse.getReservationDate()))) {
                                     if (mapdemandTypeAndDemands.containsValue(currDemandResponse.getUniqueKey())) {
                                         YantriksReservationDemandTypeRequest demandRequestTomatch = mapdemandTypeAndDemands
-                                                .get(currDemandResponse.getDemandType().concat(":").concat(currDemandResponse.getReservationDate()));
+                                                .get(currDemandResponse.getUniqueKey());
                                         if (matchDemandLevelAttributes(currDemandResponse, demandRequestTomatch)) {
                                             log.debug("Current Demand is matching");
                                         } else {
@@ -163,7 +166,7 @@ public class UrbanToYantriksCompareUpdate {
         } else {
             log.debug("CompareAndUpdate Flag is turned on, Hence calling yantriks api to update in Yantriks");
             if (!areBothReservationsSame) {
-                StringBuilder lineReserveUrl = new StringBuilder(UrbanConstants.YANTRIKS_LINE_RESERVE_URL);
+                StringBuilder lineReserveUrl = new StringBuilder(UrbanConstants.YANTRIKS_RESERVE_URL);
                 lineReserveUrl = urbanURI.getReservationUrl(lineReserveUrl, UrbanConstants.SC_GLOBAL, transactionType,
                         true, false, true, true);
                 try {
@@ -176,13 +179,12 @@ public class UrbanToYantriksCompareUpdate {
                     boolean considerCapacityParam = false;
                     boolean considerGtinParam = false;
                     String apiUrl = inventoryAggURL + "?considerCapacity=" + considerCapacityParam + "&considerGtin=" + considerGtinParam + "&showAtpForHorizon" + "=" + true;
-                    httpBody = httpBody.concat("\n   " + reservationResponse);
+//                    httpBody = httpBody.concat("\n   " + reservationResponse);
 
                     if (log.isDebugEnabled())
                         log.debug("httpBody is : " + httpBody);
 
-
-                    String content = httpBody.substring(1, httpBody.length() - 1);
+//                    String content = httpBody.substring(1, httpBody.length() - 1);
                     String newHttpClientCall = "";//YFSSystem.getProperty(YantriksConstants.PROP_ENABLE_CLOSEABLE_HTTP_CLIENT);
                     String response = null;
                     if (!YFCObject.isVoid(newHttpClientCall)) {
@@ -194,7 +196,26 @@ public class UrbanToYantriksCompareUpdate {
                         response = yantriksUtil.callYantriksAPIV3(apiUrl, YantriksConstants.YIH_REQ_METHOD_POST,  httpBody,  YantriksCommonUtil.getAvailabilityProduct());
                     }
                     else{
-                         response = yantriksUtil.callYantriksAPI(lineReserveUrl.toString(), UrbanConstants.HTTP_METHOD_PUT, httpBody, UrbanConstants.V_PRODUCT_YAS);
+                        //cancelling the reservation
+                        log.debug("cancelling reservation");
+                        StringBuilder cancelReservationUrl = new StringBuilder(YantriksConstants.API_URL_GET_RESERVE_DETAILS);
+                        cancelReservationUrl = urbanURI.getReservationURLForCancelReservation(cancelReservationUrl,orgId,reservationId,false );
+                       log.debug("cancelReservationUrl "+cancelReservationUrl.toString());
+                        response =  yantriksUtil.callYantriksGetOrDeleteAPI(cancelReservationUrl.toString(), "DELETE", UrbanConstants.V_PRODUCT_YAS);
+                        log.debug("reservation cancelled , response received "+response);
+
+                        ObjectMapper obj = new ObjectMapper();
+                        YantriksReservationRequest yantriksReservationRequest = obj.readValue(httpBody,YantriksReservationRequest.class);
+                        log.debug(" yantriksReservationRequest final "+yantriksReservationRequest.toString());
+                        if(!yantriksReservationRequest.getLineReservationDetails().isEmpty()){
+                            log.debug("mkaing a POST call to update the reservation");
+                            log.debug("lineReserveUrl "+lineReserveUrl.toString());
+                            log.debug("UrbanConstants.HTTP_METHOD_POST "+UrbanConstants.HTTP_METHOD_POST);
+                            log.debug("httpBody :"+httpBody);
+                            log.debug("UrbanConstants.V_PRODUCT_YAS) :"+UrbanConstants.V_PRODUCT_YAS);
+                           String resvResponse = yantriksUtil.callYantriksAPI(lineReserveUrl.toString(), UrbanConstants.HTTP_METHOD_POST, httpBody, UrbanConstants.V_PRODUCT_YAS);
+                             response = yantriksUtil.determineErrorOrSuccessOnReservationPost(resvResponse);
+                        }
                     }
                     if (YantriksConstants.V_FAILURE.equals(response)) {
                         log.debug("UrbanToYantriksOrderDirectUpdate: Yantriks Reservation Call failed with FAILURE response hence will write the request in file");
@@ -208,7 +229,17 @@ public class UrbanToYantriksCompareUpdate {
                         urbanCsvOutputData.setReservationResponseCode(yantriksAvailabilityErrorResponse.getStatus());
                         urbanCsvOutputData.setError(yantriksAvailabilityErrorResponse.getError());
                         urbanCsvOutputData.setMessage(yantriksAvailabilityErrorResponse.getMessage());
-                    } else {
+                    }
+                    else if(UrbanConstants.NOT_ENOUGH_ATP.equals(response)){
+                        urbanCsvOutputData.setExtnReservationId(yantriksInRequest.getOrderId());
+                        urbanCsvOutputData.setOrderId(orderId);
+                        urbanCsvOutputData.setEnterpriseCode(enterpriseCode);
+                        urbanCsvOutputData.setCompareAndGenerate(false);
+                        urbanCsvOutputData.setReservationResponseCode(UrbanConstants.RC_400);
+                        urbanCsvOutputData.setError("");
+                        urbanCsvOutputData.setMessage(UrbanConstants.NOT_ENOUGH_ATP);
+                    }
+                    else {
                         urbanCsvOutputData.setExtnReservationId(yantriksInRequest.getOrderId());
                         urbanCsvOutputData.setOrderId(orderId);
                         urbanCsvOutputData.setEnterpriseCode(enterpriseCode);
