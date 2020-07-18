@@ -1,6 +1,7 @@
 package com.yantriks.urbandatacomparator.processor;
 
 import com.sterlingcommerce.baseutil.SCXmlUtil;
+import com.yantra.yfc.dom.YFCDocument;
 import com.yantriks.urbandatacomparator.model.UrbanCsvData;
 import com.yantriks.urbandatacomparator.model.UrbanCsvOutputData;
 import com.yantriks.urbandatacomparator.sterlingapis.SterlingAPIDocumentCreator;
@@ -71,7 +72,9 @@ public class UrbanDataCompareProcessor implements Processor {
         Document inDoc = sterlingAPIDocumentCreator.createInDocForGetInvReservation(reservationId);
         try {
             getInventoryReservationList = sterlingAPIUtil.invokeSterlingAPI(inDoc, UrbanConstants.API_GET_INV_RESERVATION_LIST);
+            getInventoryReservationList = YFCDocument.createDocument("Reservation").getDocument();
             //getInventoryReservationList = sterlingGetInvListCall.executeGetInvListApi(reservationId);
+
         } catch (Exception e) {
             log.error("Exception Caught while calling getInventoryReservationList", e.getMessage());
             log.error("Cause of Exception", e.getCause());
@@ -100,7 +103,7 @@ public class UrbanDataCompareProcessor implements Processor {
                     yantriksUtil.defaultIncorrectDataToPopulate(csvWriteData, reservationId, enterpriseCode, orderId, UrbanConstants.ERR_GET_RESERVATION_FAILED);
                 } else {
                     log.debug("UrbanDataCompareProcessor: Comparing both reservation and getInventoryReservationList output, generating report or/and updating the yantriks");
-                    urbanCsvOutputData = urbanToYantriksCompareUpdate.compareReservationsAndUpdate(getInventoryReservationList, reservationResponse, true);
+                    urbanCsvOutputData = urbanToYantriksCompareUpdate.compareReservationsAndUpdate(getInventoryReservationList, reservationResponse, true,reservationId);
                     yantriksUtil.populateCSVData(csvWriteData, urbanCsvOutputData);
                 }
             } else {
@@ -115,7 +118,8 @@ public class UrbanDataCompareProcessor implements Processor {
                     Document getOrderListOP = null;
                     try {
                         getOrderListOP = sterlingAPIUtil.invokeSterlingAPI(getOrderInDoc, SCXmlUtil.createFromString(UrbanConstants.TEMPLATE_GET_ORDER_LIST), UrbanConstants.API_GET_ORDER_LIST);
-                        System.out.println(" getOrderListOP "+getOrderListOP);
+//                   getOrderListOP = YFCDocument.getDocumentForXMLFile("D:\\getorderListOutput_fix.xml").getDocument();
+                       log.debug("getOrderListOP "+SCXmlUtil.getString(getOrderListOP));
                         //getOrderListOP = sterlingGetOrderListCall.executeGetOLListApi(orderId, enterpriseCode);
                     } catch (Exception e) {
                         log.error("Exception while calling Sterling API : " + e.getMessage() + "Cause : " + e.getCause());
@@ -130,7 +134,9 @@ public class UrbanDataCompareProcessor implements Processor {
                             log.info("UrbanDataCompareProcessor : Received Orders as part of getOrderList Call");
                             String reservationResponse = null;
                             try {
+//                                reservationResponse = yantriksUtil.getJSONFromFile("D:\\getReservation_fix.json");
                                 reservationResponse = yantriksUtil.callYantriksGetOrDeleteAPI(reservationUrl.toString(), UrbanConstants.HTTP_METHOD_GET, UrbanConstants.V_PRODUCT_YAS);
+                            log.debug("reservationResponse "+reservationResponse);
                             } catch (Exception e) {
                                 log.error("Exception Caught while calling get Reservation : " + e.getMessage());
                                 log.error("Cause : " + e.getCause());
@@ -147,7 +153,7 @@ public class UrbanDataCompareProcessor implements Processor {
                                 yantriksUtil.defaultIncorrectDataToPopulate(csvWriteData, reservationId, enterpriseCode, orderId, UrbanConstants.ERR_GET_RESERVATION_FAILED);
                             } else {
                                 log.debug("UrbanDataCompareProcessor: Comparing both reservation and getOrderList Output or/and updating the yantriks");
-                                urbanCsvOutputData = urbanToYantriksCompareUpdate.compareReservationsAndUpdate(getOrderListOP, reservationResponse, false);
+                                urbanCsvOutputData = urbanToYantriksCompareUpdate.compareReservationsAndUpdate(getOrderListOP, reservationResponse, false,reservationId);
                                 yantriksUtil.populateCSVData(csvWriteData, urbanCsvOutputData);
                             }
                         }

@@ -20,5 +20,6 @@ public class YantriksReservationResponse {
     private String updateTime;
     private String updateUser;
     private String orderType;
+    private String sellingChannel;
     private List<YantriksLineReservationDetailsResponse> lineReservationDetails;
 }

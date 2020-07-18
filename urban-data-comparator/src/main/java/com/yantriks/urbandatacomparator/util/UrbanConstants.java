@@ -166,7 +166,7 @@ public class UrbanConstants {
     public static final String EXTN_RESERVATION_ID = "ExtnReservationID";
 
     // Statuses to be utilized for Demands
-    public static final ImmutableList<String> IM_LIST_SHIPPED_STATUSES = ImmutableList.of("3700");
+    public static final ImmutableList<String> IM_LIST_SHIPPED_STATUSES = ImmutableList.of("3700","3700.00.200","9000","3700.01");
     public static final ImmutableList<String> IM_LIST_ALLOCATED_STATUSES = ImmutableList.of("3350", "3200");
     public static final ImmutableList<String> IM_LIST_BACKORDER_STATUSES = ImmutableList.of("1300", "1300.100", "1400");
     public static final ImmutableList<String> IM_LIST_OPEN_STATUSES = ImmutableList.of("1100");
@@ -197,7 +197,8 @@ public class UrbanConstants {
     public static final String V_ENTITY_NOT_EXISTS = "ENTITY_NOT_EXISTS";
     public static final String V_NO_CONTENT_FOUND = "NO_CONTENT_FOUND";
     public static final ImmutableList<String> IM_LIST_GET_RESERVATION_FAILURES = ImmutableList.of("FAILURE", "NON_RETRY_EXCEPTION");
-
+    public static final String NOT_ENOUGH_ATP="NOT_ENOUGH_ATP";
+    public static final int RC_400 = 400;
 
 
 

@@ -31,7 +31,7 @@ logging:
 urban:
   sterling:
     protocol: http
-    url: 10.75.27.87:8080
+    url: sushqssteriap01.urbanout.com:8080 #STAGING -sushqssteriap01.urbanout.com:8080 #PROD - sushqpsterapp01.urbanout.com:8080 #STAGING - 10.75.31.180:8080 #DEV - 10.75.27.87:8080
     apitester:
       userid: admin
       password: password
@@ -42,7 +42,7 @@ urban:
     protocol: https
     timeout: 10000
     availability:
-      host: staging-yantriks-api.urbncloud.com/availability #yantriks-api.urbncloud.com/availability #34.102.178.188
+      host: staging-yantriks-api.urbncloud.com/availability #PROD - yantriks-api.urbncloud.com/availability #yantriks-dev-availability-api01.urbn.com   #yantriks-api.urbncloud.com/availability       #STAGING - staging-yantriks-api.urbncloud.com/availability # #34.102.178.188
       port:
     inventorylite:
       host: localhost
@@ -69,7 +69,7 @@ apicall:
 
 
 security:
-  secretKey: c3VwZXJzZWNyZXRzdHJpbmdmb3JzdGFnaW5nc3Rlcmxpbmc
+  secretKey: c3VwZXJzZWNyZXRzdHJpbmdmb3JzdGFnaW5nc3Rlcmxpbmc #PROD - ZjNlYzliMDExMGUwMWMyYTM1ODc1NzM2ZGUyNGUzM2RhMDQ2YzNiMTY5OTAxY2ZlNWJlZDFkMGExOGRlZWQ5OA #SSTAGING - c3VwZXJzZWNyZXRzdHJpbmdmb3JzdGFnaW5nc3Rlcmxpbmc
   skid: STERLING-1
   expireTime: 3600
 
