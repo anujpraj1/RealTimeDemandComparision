@@ -40,20 +40,36 @@ public class UrbanPopulateOrderReservationRequest {
 
     public String getDemandTypeForCurrentStatus(String status,String strShipNode,String strLineType,Boolean isProcureFromNodePresent) {
 
+        String strStatusTemp = status;
+        if(status.contains(".")){
+            int indexOfDot = status.indexOf(".");
+            status = status.substring(0,indexOfDot);
+            log.debug("strVal after formatting "+status);
+        }
+
              Integer iStatus = (int) Double.parseDouble(status);
 
         log.debug("iStatus :"+iStatus);
         log.debug("isProcureFromNodePresent :"+isProcureFromNodePresent);
         log.debug("strLineType :"+strLineType);
             if(strLineType.equalsIgnoreCase("FURNITURE") && Boolean.TRUE.equals(isProcureFromNodePresent)){
-                if(iStatus>=1500 && iStatus <2500)
-                {
+
+                if(UrbanConstants.IM_LIST_TO_TERMINAL_STATUSES.contains(strStatusTemp)){
+                    log.debug(" procurement TO received  :"+strStatusTemp);
                     return "SCHEDULED";
                 }
-                if(iStatus>=2500 && iStatus<3200)
-                { log.info("iStatus "+iStatus);
+//                if(iStatus>=1500 && iStatus <2500)
+//                {
+//                    return "SCHEDULED";
+//                }
+                if(UrbanConstants.IM_LIST_TO_INITIAL_STATUSES.contains(strStatusTemp)){
+                    log.debug(" TO in progress :"+strStatusTemp);
                     return "SCHEDULED_TO";
                 }
+//                if(iStatus>=2500 && iStatus<3200)
+//                { log.info("iStatus "+iStatus);
+//                    return "SCHEDULED_TO";
+//                }
             }
             if(iStatus >=1500 && iStatus <3200){
                 return "SCHEDULED";
@@ -122,21 +138,23 @@ public class UrbanPopulateOrderReservationRequest {
                 log.debug("orderLineScheduleKey :"+orderLineScheduleKey);
                 if (scheduleKeyToStatusMap.containsKey(orderLineScheduleKey)) {
                     String statusFromMap = scheduleKeyToStatusMap.get(orderLineScheduleKey);
+//                    String strStatusTemp = statusFromMap;
                     log.debug("statusFromMap : "+statusFromMap);
                     if(!YFCObject.isVoid(strProcureFromNode)){
                         isProcureFromNodePresent = true;
                     }
-                    if(UrbanConstants.IM_LIST_SHIPPED_STATUSES.contains(statusFromMap)){
-                        statusFromMap="3700";
-                    }
-                    if(statusFromMap.contains(".")){
-                        int indexOfDot = statusFromMap.indexOf(".");
-                        statusFromMap = statusFromMap.substring(0,indexOfDot);
-                        log.debug("strVal after formatting "+statusFromMap);
-                    }
-                    Integer iStatus = (int) Double.parseDouble(statusFromMap);
+//                    if(UrbanConstants.IM_LIST_SHIPPED_STATUSES.contains(statusFromMap)){
+//                        statusFromMap="3700";
+//                    }
+//                    if(statusFromMap.contains(".")){
+//                        int indexOfDot = statusFromMap.indexOf(".");
+//                        statusFromMap = statusFromMap.substring(0,indexOfDot);
+//                        log.debug("strVal after formatting "+statusFromMap);
+//                    }
+
+//                    Integer iStatus = (int) Double.parseDouble(statusFromMap);
                     String strShipNode = null;
-                    if(strLineType.equalsIgnoreCase("FURNITURE") && Boolean.TRUE.equals(isProcureFromNodePresent) && iStatus<2500 ){
+                    if(strLineType.equalsIgnoreCase("FURNITURE") && Boolean.TRUE.equals(isProcureFromNodePresent) && statusFromMap.compareTo("2500")<0){
                         strShipNode = strProcureFromNode;
                         log.debug("equating procurement node to shipnode" +strShipNode +"------"+strProcureFromNode);
                     }

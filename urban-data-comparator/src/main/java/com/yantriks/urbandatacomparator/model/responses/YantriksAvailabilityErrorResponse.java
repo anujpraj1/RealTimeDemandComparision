@@ -22,4 +22,9 @@ public class YantriksAvailabilityErrorResponse {
     private String message;
     private long status;
     private String timestamp;
+    @JsonIgnore
+    private String updateTime;
+    @JsonIgnore
+    private String updateUser;
+
 }

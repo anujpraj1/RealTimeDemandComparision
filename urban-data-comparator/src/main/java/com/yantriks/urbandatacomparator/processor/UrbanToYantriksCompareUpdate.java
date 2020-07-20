@@ -185,17 +185,17 @@ public class UrbanToYantriksCompareUpdate {
                         log.debug("httpBody is : " + httpBody);
 
 //                    String content = httpBody.substring(1, httpBody.length() - 1);
-                    String newHttpClientCall = "";//YFSSystem.getProperty(YantriksConstants.PROP_ENABLE_CLOSEABLE_HTTP_CLIENT);
+//                    String newHttpClientCall = "";//YFSSystem.getProperty(YantriksConstants.PROP_ENABLE_CLOSEABLE_HTTP_CLIENT);
                     String response = null;
-                    if (!YFCObject.isVoid(newHttpClientCall)) {
-                        boolnewHttpClientCall = Boolean.valueOf(newHttpClientCall);
-                    }
-                    log.debug("Boolean Value : "+boolnewHttpClientCall);
-                    if (boolnewHttpClientCall) {
-                        log.debug("Boolean value to call new HTTP Client is true hence calling via closeable client");
-                        response = yantriksUtil.callYantriksAPIV3(apiUrl, YantriksConstants.YIH_REQ_METHOD_POST,  httpBody,  YantriksCommonUtil.getAvailabilityProduct());
-                    }
-                    else{
+//                    if (!YFCObject.isVoid(newHttpClientCall)) {
+//                        boolnewHttpClientCall = Boolean.valueOf(newHttpClientCall);
+//                    }
+//                    log.debug("Boolean Value : "+boolnewHttpClientCall);
+//                    if (boolnewHttpClientCall) {
+//                        log.debug("Boolean value to call new HTTP Client is true hence calling via closeable client");
+//                        response = yantriksUtil.callYantriksAPIV3(apiUrl, YantriksConstants.YIH_REQ_METHOD_POST,  httpBody,  YantriksCommonUtil.getAvailabilityProduct());
+//                    }
+//                    else{
                         //cancelling the reservation
                         log.debug("cancelling reservation");
                         StringBuilder cancelReservationUrl = new StringBuilder(YantriksConstants.API_URL_GET_RESERVE_DETAILS);
@@ -216,7 +216,7 @@ public class UrbanToYantriksCompareUpdate {
                            String resvResponse = yantriksUtil.callYantriksAPI(lineReserveUrl.toString(), UrbanConstants.HTTP_METHOD_POST, httpBody, UrbanConstants.V_PRODUCT_YAS);
                              response = yantriksUtil.determineErrorOrSuccessOnReservationPost(resvResponse);
                         }
-                    }
+//                    }
                     if (YantriksConstants.V_FAILURE.equals(response)) {
                         log.debug("UrbanToYantriksOrderDirectUpdate: Yantriks Reservation Call failed with FAILURE response hence will write the request in file");
                         log.debug("UrbanToYantriksOrderDirectUpdate: Writing the request in file");

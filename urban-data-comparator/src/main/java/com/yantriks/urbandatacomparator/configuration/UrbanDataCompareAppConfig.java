@@ -6,7 +6,6 @@ import com.yantriks.urbandatacomparator.sterlingapis.SterlingGetOrderListCall;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.CamelContext;
 import org.apache.camel.impl.DefaultCamelContext;
-import org.apache.camel.impl.engine.DefaultShutdownStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -38,6 +37,8 @@ public class UrbanDataCompareAppConfig {
     @Autowired
     UrbanCSVRoute urbanCsvRoute;
 
+    @Autowired
+    CamelContext camelContext;
 
     @PostConstruct
     public void postConstruct() throws Exception {
@@ -58,12 +59,13 @@ public class UrbanDataCompareAppConfig {
     }
 
     private void startCamelContext() throws Exception {
-        CamelContext camelContext = new DefaultCamelContext();
+//        CamelContext camelContext = new DefaultCamelContext();
         log.info("UrbanDataCompareAppConfig, Staring Camel Context adding Routes");
         camelContext.addRoutes(urbanCsvRoute);
         camelContext.start();
-        //Thread.sleep(300000);
-        //camelContext.stop();
+
+//        Thread.sleep(1800000);
+//        camelContext.stop();
     }
 
 }

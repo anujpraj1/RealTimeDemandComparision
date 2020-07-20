@@ -55,6 +55,9 @@ public class UrbanCSVRoute extends RouteBuilder {
     @Value("${seda.queue}")
     private String sedaQueue;
 
+    @Value("${seda.queueSize}")
+    private String sedaQueueSize;
+
     @Autowired
     UrbanConditionCheck urbanConditionCheck;
 
@@ -73,6 +76,7 @@ public class UrbanCSVRoute extends RouteBuilder {
         log.debug("Output FIle URI :: " + outputFileURI);
 
         String SEDA_END_POINT = getSedaUri(sedaQueue);
+        //uri="seda:message?size=16&amp;blockWhenFull=true" />
 
         onCompletion().process(exchange -> {
             log.debug("Success Response for " + exchange.getIn().getBody());
@@ -133,7 +137,8 @@ public class UrbanCSVRoute extends RouteBuilder {
     }
 
     private String getSedaUri(String sedaQueue) {
-        return "seda:" + sedaQueue;
+        return "seda:" + sedaQueue+"?size="+sedaQueueSize;
+//        uri="seda:message?size=16&amp;blockWhenFull=true"
     }
 
 }

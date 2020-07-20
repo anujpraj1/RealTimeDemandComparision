@@ -43,6 +43,7 @@ public class UrbanDataCompareProcessor implements Processor {
     @Override
     public void process(Exchange exchange) throws Exception {
         UrbanCsvData csvData = exchange.getIn().getBody(UrbanCsvData.class);
+        log.debug("csvData  "+csvData);
         UrbanCsvOutputData urbanCsvOutputData = new UrbanCsvOutputData();
         boolean isInvAPIFailed = false;
         boolean isGetOrderAPIFailed = false;
@@ -51,9 +52,11 @@ public class UrbanDataCompareProcessor implements Processor {
         log.debug("OrderId : " + csvData.getOrderId());
         log.debug("EnterpriseCode : " + csvData.getEnterpriseCode());
         log.debug("ReservationId : " + csvData.getReservationId());
+        log.debug("Document Type :"+csvData.getDocumentType());
         String orderId = csvData.getOrderId();
         String enterpriseCode = csvData.getEnterpriseCode();
         String reservationId = csvData.getReservationId();
+        String documentType = csvData.getDocumentType();
 
         if (reservationId.equals("")) {
             log.error("Reservation Id cant be blank");
@@ -114,7 +117,7 @@ public class UrbanDataCompareProcessor implements Processor {
                     yantriksUtil.defaultIncorrectDataToPopulate(csvWriteData, reservationId, "", "", UrbanConstants.ERR_DATA_INCORRECT);
                 } else {
                     log.debug("UrbanDataCompareProcessor: Calling getOrderList API of sterling");
-                    Document getOrderInDoc = sterlingAPIDocumentCreator.createInDocForGetOrderList(enterpriseCode, orderId);
+                    Document getOrderInDoc = sterlingAPIDocumentCreator.createInDocForGetOrderList(enterpriseCode, orderId,documentType);
                     Document getOrderListOP = null;
                     try {
                         getOrderListOP = sterlingAPIUtil.invokeSterlingAPI(getOrderInDoc, SCXmlUtil.createFromString(UrbanConstants.TEMPLATE_GET_ORDER_LIST), UrbanConstants.API_GET_ORDER_LIST);
