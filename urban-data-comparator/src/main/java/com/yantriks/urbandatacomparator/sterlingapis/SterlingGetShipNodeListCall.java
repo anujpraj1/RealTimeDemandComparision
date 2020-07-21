@@ -9,8 +9,6 @@ import com.yantra.yfc.core.YFCObject;
 import com.yantra.yfc.dom.YFCDocument;
 import com.yantriks.urbandatacomparator.model.UrbanURI;
 import com.yantriks.urbandatacomparator.util.UrbanConstants;
-import com.yantriks.yih.adapter.util.YantriksCommonUtil;
-import com.yantriks.yih.adapter.util.YantriksConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

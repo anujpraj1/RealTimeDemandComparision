@@ -11,10 +11,17 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
+import javax.net.ssl.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
@@ -24,6 +31,7 @@ public class UrbanDataCompareAppConfig {
     //@Autowired
    // private CamelContext camelContext;
 
+    public static String INSTANCE_ID = OffsetDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
 
     @Value("${graceful.shutdown.timeoutinseconds}")
     private long gracefulShutdownTimeoutInSeconds;
@@ -43,12 +51,51 @@ public class UrbanDataCompareAppConfig {
     @PostConstruct
     public void postConstruct() throws Exception {
 
-        deleteContentOfOutputFile();
+//        deleteContentOfOutputFile();
         startCamelContext();
     }
 
+    static {
+        disableSslVerification();
+    }
+
+    private static void disableSslVerification() {
+        try
+        {
+            // Create a trust manager that does not validate certificate chains
+            TrustManager[] trustAllCerts = new TrustManager[] {new X509TrustManager() {
+                public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+                    return null;
+                }
+                public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                }
+                public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                }
+            }
+            };
+
+            // Install the all-trusting trust manager
+            SSLContext sc = SSLContext.getInstance("SSL");
+            sc.init(null, trustAllCerts, new java.security.SecureRandom());
+            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+
+            // Create all-trusting host name verifier
+            HostnameVerifier allHostsValid = new HostnameVerifier() {
+                public boolean verify(String hostname, SSLSession session) {
+                    return true;
+                }
+            };
+
+            // Install the all-trusting host verifier
+            HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        } catch (KeyManagementException e) {
+            e.printStackTrace();
+        }
+    }
     private void deleteContentOfOutputFile() throws IOException, InterruptedException {
-        String fileName = absOPDirectoryPath+"\\"+outFileName;
+        String fileName = absOPDirectoryPath+File.separator+INSTANCE_ID+File.separator+outFileName;
         log.info("File with path : "+fileName);
         File file = new File(fileName);
         PrintWriter writer = new PrintWriter(file);

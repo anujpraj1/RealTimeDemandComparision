@@ -10,7 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.util.concurrent.Executors;
+
+import static com.yantriks.urbandatacomparator.configuration.UrbanDataCompareAppConfig.INSTANCE_ID;
 
 @Component
 @Slf4j
@@ -72,7 +75,8 @@ public class UrbanCSVRoute extends RouteBuilder {
 
         String inputFileURI = getAbsFileURIPath(absInDirectoryPath) + getInputQueryParams();
         log.debug("Input FIle URI :: " + inputFileURI);
-        String outputFileURI = getAbsFileURIPath(absOPDirectoryPath) + getOutputQueryParams();
+        String outputFileURI = getAbsFileURIPath(absOPDirectoryPath+INSTANCE_ID+ File.separator)
+                + getOutputQueryParams();
         log.debug("Output FIle URI :: " + outputFileURI);
 
         String SEDA_END_POINT = getSedaUri(sedaQueue);

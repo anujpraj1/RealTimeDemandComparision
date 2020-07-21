@@ -3,15 +3,15 @@ server:
 
 data:
   input:
-    absolutedirectory: D:\temp\input
+    absolutedirectory: /Users/shash/Documents/urban/jars/
     filename: sample.csv
     option:
       noop: true
       maxMessagesPerPoll: 1
       delay: 1000
   output:
-    absolutedirectory: D:\temp\output
-    filename: outsample.csv
+    absolutedirectory: /Users/shash/Documents/urban/jars/
+    filename: output.csv
     option:
       fileexists: Append
   mode:
@@ -19,9 +19,9 @@ data:
     compareupdate: true
   upload:
     input:
-      skipHeader: true
+      skipHeader: false
   process:
-    sedathreads: 5
+    sedathreads: 1
     csvthreads: 3
 
 logging:
@@ -42,7 +42,8 @@ urban:
     protocol: https
     timeout: 10000
     availability:
-      host: staging-yantriks-api.urbncloud.com/availability #PROD - yantriks-api.urbncloud.com/availability #yantriks-dev-availability-api01.urbn.com   #yantriks-api.urbncloud.com/availability       #STAGING - staging-yantriks-api.urbncloud.com/availability # #34.102.178.188
+#      host: staging-yantriks-api.urbncloud.com/availability #PROD - yantriks-api.urbncloud.com/availability #yantriks-dev-availability-api01.urbn.com   #yantriks-api.urbncloud.com/availability       #STAGING - staging-yantriks-api.urbncloud.com/availability # #34.102.178.188
+      host: "35.186.197.207"
       port:
     inventorylite:
       host: localhost
@@ -63,6 +64,7 @@ graceful:
 
 seda:
   queue: urbandatacompare
+  queueSize: 4000
 
 apicall:
   newHttpClientCall: false
@@ -72,4 +74,6 @@ security:
   secretKey: c3VwZXJzZWNyZXRzdHJpbmdmb3JzdGFnaW5nc3Rlcmxpbmc #PROD - ZjNlYzliMDExMGUwMWMyYTM1ODc1NzM2ZGUyNGUzM2RhMDQ2YzNiMTY5OTAxY2ZlNWJlZDFkMGExOGRlZWQ5OA #SSTAGING - c3VwZXJzZWNyZXRzdHJpbmdmb3JzdGFnaW5nc3Rlcmxpbmc
   skid: STERLING-1
   expireTime: 3600
+
+
 

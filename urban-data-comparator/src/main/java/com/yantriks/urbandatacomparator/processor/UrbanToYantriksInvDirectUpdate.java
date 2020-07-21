@@ -2,6 +2,7 @@ package com.yantriks.urbandatacomparator.processor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yantriks.urbandatacomparator.model.*;
+import com.yantriks.urbandatacomparator.model.responses.HttpResponseImpl;
 import com.yantriks.urbandatacomparator.model.responses.YantriksAvailabilityErrorResponse;
 import com.yantriks.urbandatacomparator.util.UrbanConstants;
 import com.yantriks.urbandatacomparator.util.YantriksUtil;
@@ -61,34 +62,24 @@ public class UrbanToYantriksInvDirectUpdate {
             StringBuilder reserveUrl = new StringBuilder(UrbanConstants.YANTRIKS_RESERVE_URL);
             reserveUrl = urbanURI.getReservationUrl(reserveUrl, UrbanConstants.SC_GLOBAL, UrbanConstants.TT_RESERVE,
                     true, false, true, true);
-            String reservationResponse = null;
             try {
                 ObjectMapper jsonObjMapper = new ObjectMapper();
                 String httpBody = jsonObjMapper.writeValueAsString(yantriksReservationRequest);
                 log.debug("HttpBody :: " + httpBody);
-                reservationResponse = yantriksUtil.callYantriksAPI(reserveUrl.toString(), UrbanConstants.HTTP_METHOD_POST, httpBody, UrbanConstants.V_PRODUCT_YAS);
-                String response = yantriksUtil.determineErrorOrSuccessOnReservationPost(reservationResponse);
-                if (YantriksConstants.V_FAILURE.equals(response)) {
+                HttpResponseImpl reservationResponse = yantriksUtil.callYantriksAPI(reserveUrl.toString(), UrbanConstants.HTTP_METHOD_POST, httpBody, UrbanConstants.V_PRODUCT_YAS);
+              //  String response = yantriksUtil.determineErrorOrSuccessOnReservationPost(reservationResponse);
                     log.debug("UrbanToYantriksInvDirectUpdate: Yantriks Reservation Call failed with FAILURE response hence will write the request in file");
                     log.debug("UrbanToYantriksInvDirectUpdate: Writing the request in file");
                     ObjectMapper objOut = new ObjectMapper();
-                    YantriksAvailabilityErrorResponse yantriksAvailabilityErrorResponse = objOut.readValue(reservationResponse, YantriksAvailabilityErrorResponse.class);
+                    //YantriksAvailabilityErrorResponse yantriksAvailabilityErrorResponse = objOut.readValue(reservationResponse.getBody(), YantriksAvailabilityErrorResponse.class);
                     urbanCsvOutputData.setExtnReservationId(yantriksReservationRequest.getOrderId());
                     urbanCsvOutputData.setOrderId("");
                     urbanCsvOutputData.setEnterpriseCode("");
                     urbanCsvOutputData.setCompareAndGenerate(false);
-                    urbanCsvOutputData.setReservationResponseCode(yantriksAvailabilityErrorResponse.getStatus());
-                    urbanCsvOutputData.setError(yantriksAvailabilityErrorResponse.getError());
-                    urbanCsvOutputData.setMessage(yantriksAvailabilityErrorResponse.getMessage());
-                } else {
-                    urbanCsvOutputData.setExtnReservationId(yantriksReservationRequest.getOrderId());
-                    urbanCsvOutputData.setOrderId("");
-                    urbanCsvOutputData.setEnterpriseCode("");
-                    urbanCsvOutputData.setCompareAndGenerate(false);
-                    urbanCsvOutputData.setReservationResponseCode(UrbanConstants.RC_201);
-                    urbanCsvOutputData.setError("");
-                    urbanCsvOutputData.setMessage(UrbanConstants.MSG_SUCCESS);
-                }
+                    urbanCsvOutputData.setReservationResponseCode(reservationResponse.getStatus());
+                    urbanCsvOutputData.setError(reservationResponse.getBody());
+                    urbanCsvOutputData.setMessage(reservationResponse.getMessage());
+
             } catch (Exception e) {
                 log.error("UrbanToYantriksInvDirectUpdate : Exception caught while creating reservation : " + e.getMessage());
                 log.debug("UrbanToYantriksInvDirectUpdate: Writing the request in file");
@@ -96,9 +87,9 @@ public class UrbanToYantriksInvDirectUpdate {
                 urbanCsvOutputData.setOrderId("");
                 urbanCsvOutputData.setEnterpriseCode("");
                 urbanCsvOutputData.setCompareAndGenerate(false);
-                urbanCsvOutputData.setReservationResponseCode(UrbanConstants.RC_500);
-                urbanCsvOutputData.setError(UrbanConstants.ERR_YANT_SERVER_DOWN);
-                urbanCsvOutputData.setMessage("");
+                urbanCsvOutputData.setReservationResponseCode(999);
+                urbanCsvOutputData.setError("Local Error");
+                urbanCsvOutputData.setMessage(e.getMessage());
             }
         }
         return urbanCsvOutputData;

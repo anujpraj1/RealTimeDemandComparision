@@ -49,9 +49,7 @@ public class UrbanPopulateOrderReservationRequest {
 
              Integer iStatus = (int) Double.parseDouble(status);
 
-        log.debug("iStatus :"+iStatus);
-        log.debug("isProcureFromNodePresent :"+isProcureFromNodePresent);
-        log.debug("strLineType :"+strLineType);
+        log.debug("iStatus :"+iStatus+ " isProcureFromNodePresent :"+isProcureFromNodePresent+" strLineType :"+strLineType);
             if(strLineType.equalsIgnoreCase("FURNITURE") && Boolean.TRUE.equals(isProcureFromNodePresent)){
 
                 if(UrbanConstants.IM_LIST_TO_TERMINAL_STATUSES.contains(strStatusTemp)){
