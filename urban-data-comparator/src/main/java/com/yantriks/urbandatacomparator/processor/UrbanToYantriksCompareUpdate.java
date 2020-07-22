@@ -222,9 +222,12 @@ public class UrbanToYantriksCompareUpdate {
 //                            yantriksUtil.populateCSVData(csvWriteData, urbanCsvOutputData);
                         }
                         else{
-                            log.debug("status 0");
-                            urbanCsvOutputData.setCompareAndGenerate(false);
-                            urbanCsvOutputData.setError("setting status 0");
+                            log.info("UrbanToYantriksOrderDirectUpdate: Line Reservation Details are empty hence not calling Yantriks API");
+                            urbanCsvOutputData.setMessage("Lines are cancelled in sterling");
+                            urbanCsvOutputData.setCompareAndGenerate(true);
+//                urbanCsvOutputData.setReservationStatus(UrbanConstants.MSG_NO_UPDATE_REQUIRED);
+                            urbanCsvOutputData.setReservationStatus("STATUSES_OUT_OF_RESERVATION");
+                            urbanCsvOutputData.setReservationResponseCode(998);
                         }
                     }
                     else{
