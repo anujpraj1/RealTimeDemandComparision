@@ -89,8 +89,8 @@ security:
 
 feign:
   httpclient:
-    maxConnections: 20
-    maxConnectionsPerRoute: 8
+    maxConnections: 10
+    maxConnectionsPerRoute: 5
   retry:
     period: 60000
     duration: 360000
