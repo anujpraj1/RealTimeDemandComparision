@@ -6,6 +6,7 @@ import com.yantra.yfc.core.YFCObject;
 import com.yantra.yfc.util.YFCCommon;
 import com.yantra.yfs.core.YFSSystem;
 import com.yantra.yfs.japi.YFSException;
+import com.yantriks.urbandatacomparator.configuration.FeignGatewayException;
 import com.yantriks.urbandatacomparator.configuration.FeignRequestException;
 import com.yantriks.urbandatacomparator.configuration.ReservationClient;
 import com.yantriks.urbandatacomparator.model.UrbanCsvOutputData;
@@ -14,6 +15,7 @@ import com.yantriks.urbandatacomparator.model.responses.HttpResponseImpl;
 import com.yantriks.urbandatacomparator.sterlingapis.SterlingAPIDocumentCreator;
 import com.yantriks.urbandatacomparator.sterlingapis.SterlingAPIUtil;
 import com.yantriks.yih.adapter.util.YantriksConstants;
+import feign.RetryableException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.json.JSONException;
 import org.apache.commons.json.JSONObject;
@@ -89,6 +91,11 @@ public class YantriksUtil {
             urbanCsvOutputData.setReservationResponseCode(ex.getHttpStatus().value());
             urbanCsvOutputData.setError(((FeignRequestException) e).getBody());
             urbanCsvOutputData.setMessage(ex.getHttpStatus().getReasonPhrase());
+        } else if (e instanceof FeignGatewayException) {
+            FeignGatewayException ex = (FeignGatewayException) e;
+            urbanCsvOutputData.setReservationResponseCode(ex.getStatus());
+            urbanCsvOutputData.setError("BAD_GATEWAY");
+            urbanCsvOutputData.setMessage(ex.getMessage());
         } else {
             urbanCsvOutputData.setReservationResponseCode(999);
             urbanCsvOutputData.setError("Local Error");
@@ -868,7 +875,7 @@ public class YantriksUtil {
         urbanCsvData.setEnterpriseCode(enterpriseCode);
         urbanCsvData.setOrderId(orderId);
         urbanCsvData.setError(errorResponse);
-        buildCSVData("DATA",csvWriteData, urbanCsvData);
+        buildCSVData("DATA", csvWriteData, urbanCsvData);
 
 
 //        csvWriteData.append(reservationId);
@@ -888,13 +895,13 @@ public class YantriksUtil {
 //        csvWriteData.append(urbanCsvData.getEnterpriseCode());
 //        csvWriteData.append("|");
 //        csvWriteData.append(urbanCsvData.getOrderId());
-        buildCSVData("CNG",csvWriteData, urbanCsvData);
+        buildCSVData("CNG", csvWriteData, urbanCsvData);
 
 
     }
 
     public void dataFromCompareAndUpdate(StringBuilder csvWriteData, UrbanCsvOutputData urbanCsvData) {
-        buildCSVData("CNU",csvWriteData, urbanCsvData);
+        buildCSVData("CNU", csvWriteData, urbanCsvData);
 
     }
 

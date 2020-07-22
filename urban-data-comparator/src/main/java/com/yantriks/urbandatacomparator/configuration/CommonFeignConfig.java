@@ -5,10 +5,11 @@
 package com.yantriks.urbandatacomparator.configuration;
 
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.CharStreams;
-import feign.Request;
+import feign.*;
 import lombok.*;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,11 +26,9 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Date;
 
-import feign.Logger;
-import feign.Response;
 import feign.Response.Body;
-import feign.Retryer;
 import feign.Retryer.Default;
 import feign.codec.ErrorDecoder;
 
@@ -56,6 +55,7 @@ class CommonFeignConfig {
     @Value("${feign.coreService.readtimeout:120000}")
     private int readTimeoutMillis;
 
+
     @Bean
     public Request.Options options() {
         return new Request.Options(connectTimeoutMillis, readTimeoutMillis);
@@ -75,7 +75,6 @@ class CommonFeignConfig {
     public HttpMessageConverters httpMessageConverters() {
         return new HttpMessageConverters(new MappingJackson2HttpMessageConverter());
     }
-
 
 
     @Bean
@@ -103,6 +102,7 @@ class CommonFeignConfig {
                         ExceptionMessage.class);
 
                 message = exceptionMessage.message;
+            } catch (JsonParseException e) {
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -120,17 +120,17 @@ class CommonFeignConfig {
 
             switch (response.status()) {
                 case 400:
-                    return new FeignRequestException( HttpStatus.BAD_REQUEST, message == null ? "BAD_REQUEST" :
+                    return new FeignRequestException(HttpStatus.BAD_REQUEST, message == null ? "BAD_REQUEST" :
                             message);
 
                 case 404:
-                    return new FeignRequestException( HttpStatus.NOT_FOUND, message == null ? "File not found" :
+                    return new FeignRequestException(HttpStatus.NOT_FOUND, message == null ? "File not found" :
                             message);
                 case 403:
                     return new FeignRequestException(HttpStatus.FORBIDDEN, message == null ? "Forbidden access" : message);
                 case 502:
-                    return new FeignRequestException(HttpStatus.BAD_GATEWAY, message == null ? "Bad Gateway" : message);
-
+                    return new FeignGatewayException
+                            (HttpStatus.BAD_GATEWAY.value(), HttpStatus.BAD_GATEWAY.getReasonPhrase(), response.request().httpMethod(), (new Date(System.currentTimeMillis() + period)), response.request());
 
 
             }

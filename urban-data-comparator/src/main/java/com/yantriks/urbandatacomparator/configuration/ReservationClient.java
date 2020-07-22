@@ -15,7 +15,7 @@ import static com.yantriks.yih.adapter.util.YantriksConstants.QUERY_PARAM_RESTOR
 
 @FeignClient(
         url = "${urban.yantriks.availability.host2}",
-        name = "Reservation",
+        name = "reservation",
         path = ReservationClient.ENDPOINT,
         decode404 = true,
         configuration = CommonFeignConfig.class
