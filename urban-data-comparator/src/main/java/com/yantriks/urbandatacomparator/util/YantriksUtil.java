@@ -918,7 +918,7 @@ public class YantriksUtil {
         csvWriteData.append("|");
         csvWriteData.append(urbanCsvData.getOrderId());
         csvWriteData.append("|");
-        csvWriteData.append(urbanCsvData.getError());
+        csvWriteData.append(urbanCsvData.getReservationStatus());
     }
 
     public void populateCSVData(StringBuilder csvWriteData, UrbanCsvOutputData urbanCsvOutputData) {

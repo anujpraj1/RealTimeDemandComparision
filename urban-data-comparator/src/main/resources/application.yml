@@ -13,14 +13,14 @@ ribbon:
 
 data:
   input:
-    absolutedirectory: /Users/shash/Documents/urban/jars/
-    filename: sample2.csv
+    absolutedirectory: D:\temp\input\
+    filename: sample_0Error.csv
     option:
       noop: true
       maxMessagesPerPoll: 1
       delay: 1000
   output:
-    absolutedirectory: /Users/shash/Documents/urban/jars/
+    absolutedirectory: D:\temp\output\
     filename: output.csv
     option:
       fileexists: Append
@@ -54,7 +54,7 @@ urban:
     availability:
 #      host: staging-yantriks-api.urbncloud.com/availability #PROD - yantriks-api.urbncloud.com/availability #yantriks-dev-availability-api01.urbn.com   #yantriks-api.urbncloud.com/availability       #STAGING - staging-yantriks-api.urbncloud.com/availability # #34.102.178.188
       host: "35.186.197.207"
-      host2: "https://35.186.197.207"
+      host2: staging-yantriks-api.urbncloud.com/availability #"https://35.186.197.207"
       port:
     inventorylite:
       host: localhost
@@ -75,7 +75,7 @@ graceful:
 
 seda:
   queue: urbandatacompare
-  queueSize: 4000
+  queueSize: 10000
 
 apicall:
   newHttpClientCall: false
@@ -92,6 +92,6 @@ feign:
     maxConnections: 10
     maxConnectionsPerRoute: 5
   retry:
-    period: 60000
+    period: 40000
     duration: 360000
-    maxAttempts: 5
+    maxAttempts: 3

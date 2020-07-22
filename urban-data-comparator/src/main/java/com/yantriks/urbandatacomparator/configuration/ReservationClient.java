@@ -14,7 +14,7 @@ import static com.yantriks.urbandatacomparator.util.UrbanConstants.*;
 import static com.yantriks.yih.adapter.util.YantriksConstants.QUERY_PARAM_RESTORE_CAPACITY;
 
 @FeignClient(
-        url = "${urban.yantriks.availability.host2}",
+        url = "${urban.yantriks.protocol}"+"://"+"${urban.yantriks.availability.host2}",
         name = "reservation",
         path = ReservationClient.ENDPOINT,
         decode404 = true,

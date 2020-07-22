@@ -219,6 +219,12 @@ public class UrbanToYantriksCompareUpdate {
                             urbanCsvOutputData.setReservationResponseCode(response.getStatusCodeValue());
                             urbanCsvOutputData.setError(null);
                             urbanCsvOutputData.setMessage(response.getStatusCode().getReasonPhrase());
+//                            yantriksUtil.populateCSVData(csvWriteData, urbanCsvOutputData);
+                        }
+                        else{
+                            log.debug("status 0");
+                            urbanCsvOutputData.setCompareAndGenerate(false);
+                            urbanCsvOutputData.setError("setting status 0");
                         }
                     }
                     else{
