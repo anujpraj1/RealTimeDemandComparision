@@ -212,8 +212,7 @@ public class UrbanPopulateOrderReservationRequest {
                                             try {
                                                 SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
                                                 String strCurrentDate = yantriksUtil.getCurrentDateOrTimeStamp(format);
-                                                log.debug("strCurrentDate :"+strCurrentDate);
-                                                log.debug("strExpectedShipmentDate :"+strExpectedShipmentDate);
+                                                log.debug("strCurrentDate :"+strCurrentDate + " strExpectedShipmentDate :"+strExpectedShipmentDate);
                                                strFormattedESDate =   yantriksUtil.getDateinUTC(strExpectedShipmentDate);
                                                Date ESDate = format.parse(strExpectedShipmentDate);
                                                Date currentDate = format.parse(strCurrentDate);

@@ -14,8 +14,6 @@ import java.util.List;
 @Component
 public class UrbanSedaMessageProcessor implements Processor {
 
-    @Autowired
-    UrbanCsvOutputData urbanCsvOutputData;
 
     @Override
     public void process(Exchange exchange) throws Exception {

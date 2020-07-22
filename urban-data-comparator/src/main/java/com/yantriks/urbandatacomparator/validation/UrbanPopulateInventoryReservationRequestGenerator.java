@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 @Slf4j
-public class UrbanPopulateInventoryReservationRequest {
+public class UrbanPopulateInventoryReservationRequestGenerator {
 
 
     @Value("${yantriks.default.fulfillmentservice}")

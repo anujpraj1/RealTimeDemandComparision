@@ -5,7 +5,12 @@
 package com.yantriks.urbandatacomparator.configuration;
 
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.io.CharStreams;
 import feign.Request;
+import lombok.*;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
@@ -32,7 +37,7 @@ import feign.codec.ErrorDecoder;
 @EnableFeignClients
 class CommonFeignConfig {
 
- //   @Value("${feign.loglevel:basic}")
+    //   @Value("${feign.loglevel:basic}")
     Logger.Level logLevel = Logger.Level.BASIC;
 
     @Value("${feign.retry.period:100}")
@@ -75,37 +80,76 @@ class CommonFeignConfig {
         return new FeignErrorDecoder();
     }
 
-    private static final class FeignErrorDecoder implements ErrorDecoder {
+    public class FeignErrorDecoder implements ErrorDecoder {
+
+        private final ErrorDecoder errorDecoder = new Default();
 
         @Override
-        public Exception decode(String methodKey, Response response) {
+        public Exception decode(String s, Response response) {
 
-            StringBuilder buffer = new StringBuilder();
-            int status = response.status();
-            Reader responseReader;
+            String message = null;
+            Reader reader = null;
 
             try {
+                reader = response.body().asReader();
+                String result = CharStreams.toString(reader);
 
-                Body responseBody = response.body();
+                ObjectMapper mapper = new ObjectMapper();
+                mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+                ExceptionMessage exceptionMessage = mapper.readValue(result,
+                        ExceptionMessage.class);
 
-                if (responseBody != null) {
-                    responseReader = responseBody.asReader();
-                    char[] arr = new char[8 * 1024];
-                    int numCharsRead;
-                    while ((numCharsRead = responseReader.read(arr, 0, arr.length)) != -1) {
-                        buffer.append(arr, 0, numCharsRead);
-                    }
-                    responseReader.close();
-                }
-
-                return new FeignRequestException(HttpStatus.valueOf(status), buffer.toString());
+                message = exceptionMessage.message;
 
             } catch (IOException e) {
-                return e;
+                e.printStackTrace();
+            } finally {
+
+                try {
+
+                    if (reader != null)
+                        reader.close();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
 
+            switch (response.status()) {
+                case 400:
+                    return new FeignRequestException( HttpStatus.BAD_REQUEST, message == null ? "BAD_REQUEST" :
+                            message);
+
+                case 404:
+                    return new FeignRequestException( HttpStatus.NOT_FOUND, message == null ? "File not found" :
+                            message);
+                case 403:
+                    return new FeignRequestException(HttpStatus.FORBIDDEN, message == null ? "Forbidden access" : message);
+
+            }
+
+            return errorDecoder.decode(s, response);
         }
+
+
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @ToString
+    public static class ExceptionMessage {
+
+        private String timestamp;
+        private int status;
+        private String error;
+        private Object errorLines;
+        private String message;
+        private String path;
 
     }
 
 }
+
+

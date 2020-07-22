@@ -38,26 +38,26 @@ public interface ReservationClient {
     );
 
     @RequestMapping(method = RequestMethod.POST, value = "/{sellingChannel}/{transactionType}")
-    ReservationProductLocationResponse createReservation(
+    public ResponseEntity<ReservationProductLocationResponse> createReservation(
             @PathVariable("sellingChannel") String sellingChannel,
             @PathVariable("transactionType") String transactionType,
             @RequestBody ReservationOrderRequest request,
-            @RequestParam(CAN_RESERVE_AFTER) String canReserveAfter,
-            @RequestParam(CONSIDER_CAPACITY) String considerCapacity,
-            @RequestParam(CONSIDER_GTIN) String considerGtin,
-            @RequestParam(IGNORE_AVAILABILITY_CHECK) String ignoreAvailabilityCheck
+            @RequestParam(CAN_RESERVE_AFTER) boolean canReserveAfter,
+            @RequestParam(CONSIDER_CAPACITY) boolean considerCapacity,
+            @RequestParam(CONSIDER_GTIN) boolean considerGtin,
+            @RequestParam(IGNORE_AVAILABILITY_CHECK) boolean ignoreAvailabilityCheck
 
     );
 
     @RequestMapping(method = RequestMethod.PUT, value = "/{sellingChannel}/{transactionType}")
-    ReservationProductLocationResponse updateReservation(
+    public ResponseEntity<ReservationProductLocationResponse> updateReservation(
             @PathVariable("sellingChannel") String sellingChannel,
             @PathVariable("transactionType") String transactionType,
             @RequestBody ReservationOrderRequest request,
-            @RequestParam(CAN_RESERVE_AFTER) String canReserveAfter,
-            @RequestParam(CONSIDER_CAPACITY) String considerCapacity,
-            @RequestParam(CONSIDER_GTIN) String considerGtin,
-            @RequestParam(IGNORE_AVAILABILITY_CHECK) String ignoreAvailabilityCheck
+            @RequestParam(CAN_RESERVE_AFTER) boolean canReserveAfter,
+            @RequestParam(CONSIDER_CAPACITY) boolean considerCapacity,
+            @RequestParam(CONSIDER_GTIN) boolean considerGtin,
+            @RequestParam(IGNORE_AVAILABILITY_CHECK) boolean ignoreAvailabilityCheck
 
     );
 
@@ -67,10 +67,10 @@ public interface ReservationClient {
             @PathVariable("sellingChannel") String sellingChannel,
             @PathVariable("transactionType") String transactionType,
             @RequestBody ReservationOrderRequest request,
-            @RequestParam(CAN_RESERVE_AFTER) String canReserveAfter,
-            @RequestParam(CONSIDER_CAPACITY) String considerCapacity,
-            @RequestParam(CONSIDER_GTIN) String considerGtin,
-            @RequestParam(IGNORE_AVAILABILITY_CHECK) String ignoreAvailabilityCheck,
+            @RequestParam(CAN_RESERVE_AFTER) boolean canReserveAfter,
+            @RequestParam(CONSIDER_CAPACITY) boolean considerCapacity,
+            @RequestParam(CONSIDER_GTIN) boolean considerGtin,
+            @RequestParam(IGNORE_AVAILABILITY_CHECK) boolean ignoreAvailabilityCheck,
             @RequestParam("integrationService") boolean integrationService
 
     );
@@ -78,10 +78,8 @@ public interface ReservationClient {
 
     @RequestMapping(method = RequestMethod.DELETE, value = "/URBN/{orderNo}",
             consumes = "application/json",
-            produces = "application/json"
-
-    )
-    ResponseEntity<Void> deleteReservation(
+            produces = "application/json")
+    public ResponseEntity<Void> deleteReservation(
             @PathVariable("orderNo") String orderNo,
             @RequestParam(QUERY_PARAM_RESTORE_CAPACITY) boolean restoreCapacity
     );
