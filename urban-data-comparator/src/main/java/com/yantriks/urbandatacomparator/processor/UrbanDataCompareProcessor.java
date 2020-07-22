@@ -2,6 +2,7 @@ package com.yantriks.urbandatacomparator.processor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sterlingcommerce.baseutil.SCXmlUtil;
+import com.yantriks.urbandatacomparator.configuration.CommonFeignConfig;
 import com.yantriks.urbandatacomparator.configuration.ReservationClient;
 import com.yantriks.urbandatacomparator.model.UrbanCsvData;
 import com.yantriks.urbandatacomparator.model.UrbanCsvOutputData;
@@ -17,6 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
+
+import java.util.regex.Pattern;
 
 @Slf4j
 @Component
@@ -46,6 +49,9 @@ public class UrbanDataCompareProcessor implements Processor {
 
     @Autowired
     ReservationClient reservationClient;
+
+//    @Autowired
+//    CommonFeignConfig.FeignErrorDecoder feignErrorDecoder;
 
     @Override
     public void process(Exchange exchange) throws Exception {
@@ -131,7 +137,7 @@ public class UrbanDataCompareProcessor implements Processor {
     }
 
     private void parseOrderDetailResponse(StringBuilder csvWriteData, String orderId, String enterpriseCode, String reservationId, StringBuilder reservationUrl, Document getOrderListOP) throws Exception {
-        UrbanCsvOutputData urbanCsvOutputData;
+        UrbanCsvOutputData urbanCsvOutputData = new UrbanCsvOutputData();
         if ("0".equals(getOrderListOP.getDocumentElement().getAttribute(UrbanConstants.A_TOTAL_NUM_OF_RECORDS))) {
             log.info("UrbanDataCompareProcessor: No Records found for in get order list");
             yantriksUtil.defaultIncorrectDataToPopulate(csvWriteData, reservationId, enterpriseCode, orderId, UrbanConstants.ERR_NO_ORDER_FOUND);
@@ -139,60 +145,36 @@ public class UrbanDataCompareProcessor implements Processor {
             log.info("UrbanDataCompareProcessor : Received Orders as part of getOrderList Call");
             String reservationResponse = null;
             try {
-//                                reservationResponse = yantriksUtil.getJSONFromFile("D:\\getReservation_fix.json");
-                //reservationResponse = yantriksUtil.callYantriksGetOrDeleteAPI(reservationUrl.toString(), UrbanConstants.HTTP_METHOD_GET, UrbanConstants.V_PRODUCT_YAS);
                 ResponseEntity<ReservationOrderResponse> reservationResponse2 = reservationClient.getReservation(reservationId);
-                reservationResponse = reservationResponse2.getBody() != null ? objectMapper.writeValueAsString( reservationResponse2.getBody() ): null;
+//                reservationResponse = reservationResponse2.getBody() != null ? objectMapper.writeValueAsString( reservationResponse2.getBody() ): null;
+                processYantriksReservationResponse(reservationResponse2,getOrderListOP,reservationResponse2.getBody(),reservationId);
                 log.debug("reservationResponse " + reservationResponse);
             } catch (Exception e) {
                 e.printStackTrace();
                 log.error("Exception Caught while calling get Reservation : " + e.getMessage());
                 log.error("Cause : " + e.getCause());
-                reservationResponse = UrbanConstants.V_EXC_FAILURE;
-            }
-            String response = yantriksUtil.determineErrorOrSuccessOnReservationPost(reservationResponse);
-            log.debug("Response of determineErrorOrSuccessOnReservationPost : " + response);
-
-            if (UrbanConstants.V_FAILURE.equals(response)) {
-                log.debug("UrbanDataCompareProcessor: Yantriks does not have reservation hence based on getOrderList call output updating yantriks");
-                urbanCsvOutputData = urbanToYantriksOrderDirectUpdate.directUpdateToYantriks(getOrderListOP);
-                yantriksUtil.populateCSVData(csvWriteData, urbanCsvOutputData);
-            } else if (UrbanConstants.V_EXC_FAILURE.equals(response)) {
                 log.debug("UrbanDataCompareProcessor :: Yantriks API failed with Exception hence will set the CSV response as GET_RESERVATION_FAILED");
                 yantriksUtil.defaultIncorrectDataToPopulate(csvWriteData, reservationId, enterpriseCode, orderId, UrbanConstants.ERR_GET_RESERVATION_FAILED);
-            } else {
-                log.debug("UrbanDataCompareProcessor: Comparing both reservation and getOrderList Output or/and updating the yantriks");
-                urbanCsvOutputData = urbanToYantriksCompareUpdate.compareReservationsAndUpdate(getOrderListOP, reservationResponse, false, reservationId);
-                yantriksUtil.populateCSVData(csvWriteData, urbanCsvOutputData);
             }
         }
     }
 
     private void parseReservationListDocument(StringBuilder csvWriteData, String orderId, String enterpriseCode, String reservationId, StringBuilder reservationUrl, Document getInventoryReservationList) throws Exception {
         String reservationResponse;
-        UrbanCsvOutputData urbanCsvOutputData;
+        UrbanCsvOutputData urbanCsvOutputData = new UrbanCsvOutputData();
         try {
 //            reservationResponse = yantriksUtil.callYantriksGetOrDeleteAPI(reservationUrl.toString(), UrbanConstants.HTTP_METHOD_GET, UrbanConstants.V_PRODUCT_YAS);
             ResponseEntity<ReservationOrderResponse> reservationResponse2 = reservationClient.getReservation(reservationId);
-            reservationResponse = reservationResponse2.getBody() != null ? objectMapper.writeValueAsString(reservationResponse2.getBody()) : null;
+//            reservationResponse = reservationResponse2.getBody() != null ? objectMapper.writeValueAsString(reservationResponse2.getBody()) : null;
+            processYantriksReservationResponse(reservationResponse2,getInventoryReservationList,reservationResponse2.getBody(),reservationId);
+            yantriksUtil.populateCSVData(csvWriteData, urbanCsvOutputData);
+
         } catch (Exception e) {
             log.error("UrbanDataCompareProcessor: Yantriks Get Reservation failed");
-            reservationResponse = UrbanConstants.V_EXC_FAILURE;
-        }
-        String response = yantriksUtil.determineErrorOrSuccessOnReservationPost(reservationResponse);
-        if (UrbanConstants.V_FAILURE.equals(response)) {
-            log.debug("UrbanDataCompareProcessor: Reservation does not exist hence creating a new one from inventory response");
-            urbanCsvOutputData = urbanToYantriksInvDirectUpdate.directUpdateToYantriks(getInventoryReservationList);
-            yantriksUtil.populateCSVData(csvWriteData, urbanCsvOutputData);
-            log.debug("UrbanDataCompareProcessor: directUpdateToInvYantriks : Done");
-        } else if (UrbanConstants.V_EXC_FAILURE.equals(response)) {
             log.debug("UrbanDataCompareProcessor :: Yantriks API failed with Exception hence will set the data to write in CSV");
             yantriksUtil.defaultIncorrectDataToPopulate(csvWriteData, reservationId, enterpriseCode, orderId, UrbanConstants.ERR_GET_RESERVATION_FAILED);
-        } else {
-            log.debug("UrbanDataCompareProcessor: Comparing both reservation and getInventoryReservationList output, generating report or/and updating the yantriks");
-            urbanCsvOutputData = urbanToYantriksCompareUpdate.compareReservationsAndUpdate(getInventoryReservationList, reservationResponse, true, reservationId);
-            yantriksUtil.populateCSVData(csvWriteData, urbanCsvOutputData);
         }
+
     }
 
     private StringBuilder getReservationUrl(String reservationId) {
@@ -206,5 +188,36 @@ public class UrbanDataCompareProcessor implements Processor {
 
     private boolean isEmptyOrNull(String str) {
         return str == null || str.trim().isEmpty();
+    }
+
+    /***
+     *
+     * @param responseEntity
+     * @param getInventoryReservationList
+     * @param reservationResponse
+     * @param reservationId
+     * @throws Exception
+     */
+    public void processYantriksReservationResponse(ResponseEntity responseEntity,Document getInventoryReservationList ,ReservationOrderResponse reservationResponse,String reservationId ) throws Exception {
+
+        switch (responseEntity.getStatusCodeValue()){
+            case 200 :
+                log.debug("UrbanDataCompareProcessor: Comparing both reservation and getInventoryReservationList output, generating report or/and updating the yantriks");
+                 urbanToYantriksCompareUpdate.compareReservationsAndUpdate(getInventoryReservationList, reservationResponse, true, reservationId);
+                break;
+
+            case 201:
+                log.debug("UrbanDataCompareProcessor : POST operation successful , Reservation created in yantriks ");
+                break;
+
+            case 204 :
+                log.debug("UrbanDataCompareProcessor: Reservation does not exist hence creating a new one from inventory response");
+                 urbanToYantriksInvDirectUpdate.directUpdateToYantriks(getInventoryReservationList);
+                break;
+
+            default:
+                log.debug("Received status code : "+responseEntity.getStatusCodeValue()+" Response received is : "+responseEntity.toString());
+                break;
+        }
     }
 }

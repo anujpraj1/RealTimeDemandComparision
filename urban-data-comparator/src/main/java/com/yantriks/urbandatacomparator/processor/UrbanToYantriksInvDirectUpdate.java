@@ -73,7 +73,7 @@ public class UrbanToYantriksInvDirectUpdate {
                 // HttpResponseImpl reservationResponse = yantriksUtil.callYantriksAPI(reserveUrl.toString(), UrbanConstants.HTTP_METHOD_POST, httpBody, UrbanConstants.V_PRODUCT_YAS);
                 //  String response = yantriksUtil.determineErrorOrSuccessOnReservationPost(reservationResponse);
                 ResponseEntity<ReservationProductLocationResponse> response = reservationClient.createReservation(UrbanConstants.SC_GLOBAL, UrbanConstants.TT_RESERVE, reservationOrderRequest, true, false, true, true);
-
+//                urbanDataCompareProcessor.processYantriksReservationResponse(response,inDoc,g,reservationId);
                 log.debug("UrbanToYantriksInvDirectUpdate: Writing the request in file");
                 //YantriksAvailabilityErrorResponse yantriksAvailabilityErrorResponse = objectMapper.readValue(reservationResponse.getBody(), YantriksAvailabilityErrorResponse.class);
                 urbanCsvOutputData.setExtnReservationId(reservationOrderRequest.getOrderId());
