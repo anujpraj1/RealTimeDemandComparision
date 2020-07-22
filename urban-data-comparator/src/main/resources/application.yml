@@ -1,10 +1,20 @@
 server:
   port: 8060
 
+spring:
+  main:
+    allow-bean-definition-overriding: true
+
+ribbon:
+  eureka:
+    enabled: false
+  EnableZoneAffinity: true
+  IsSecure: true
+
 data:
   input:
     absolutedirectory: /Users/shash/Documents/urban/jars/
-    filename: sample.csv
+    filename: small.csv
     option:
       noop: true
       maxMessagesPerPoll: 1
@@ -19,10 +29,10 @@ data:
     compareupdate: true
   upload:
     input:
-      skipHeader: false
+      skipHeader: true
   process:
     sedathreads: 1
-    csvthreads: 3
+    csvthreads: 1
 
 logging:
   level:
@@ -44,6 +54,7 @@ urban:
     availability:
 #      host: staging-yantriks-api.urbncloud.com/availability #PROD - yantriks-api.urbncloud.com/availability #yantriks-dev-availability-api01.urbn.com   #yantriks-api.urbncloud.com/availability       #STAGING - staging-yantriks-api.urbncloud.com/availability # #34.102.178.188
       host: "35.186.197.207"
+      host2: "https://35.186.197.207"
       port:
     inventorylite:
       host: localhost

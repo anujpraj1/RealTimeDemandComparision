@@ -35,6 +35,7 @@ import org.apache.log4j.Level;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -85,14 +86,14 @@ public class YantriksUtil {
     @Autowired
     SterlingAPIUtil sterlingAPIUtil;
 
-    public String callYantriksGetOrDeleteAPI(String apiUrl, String httpMethod, String productToCall) throws YIFClientCreationException, ParserConfigurationException, IOException, URISyntaxException {
-
-        if (Boolean.TRUE.equals(boolnewHttpClientCall)) {
-            return callYantriksAPIViaCloseable(apiUrl, httpMethod, "", productToCall);
-        } else {
-            return callYantriksGetOrDeleteAPIOld(apiUrl, httpMethod, productToCall);
-        }
-    }
+//    public String callYantriksGetOrDeleteAPI(String apiUrl, String httpMethod, String productToCall) throws YIFClientCreationException, ParserConfigurationException, IOException, URISyntaxException {
+//
+//        if (Boolean.TRUE.equals(boolnewHttpClientCall)) {
+//            return callYantriksAPIViaCloseable(apiUrl, httpMethod, "", productToCall);
+//        } else {
+//            return callYantriksGetOrDeleteAPIOld(apiUrl, httpMethod, productToCall);
+//        }
+//    }
 
     /***
      *
@@ -310,28 +311,21 @@ public class YantriksUtil {
                 log.debug("504 received " + "   |  conn.getResponseMessage()  :  " + conn.getResponseMessage() +
                         (" |   method name :" + Thread.currentThread().getStackTrace()[0].getMethodName()) + "   |   getReadTimeout  " + conn.getReadTimeout() +
                         "     |   HTTP method : " + httpMethod);
-                return new HttpResponseImpl(conn.getResponseCode(), null, readErrorStream(conn), conn.getResponseMessage());
             } else if (conn.getResponseCode() == 204) {
                 log.info("No content or record found in yantriks " + "Hence directUpdate needs to be done to yantriks , returning \"\" ");
-                return new HttpResponseImpl(conn.getResponseCode(), null, null, conn.getResponseMessage());
 
             } else if (conn.getResponseCode() == 400) {
                 log.info("Status received " + conn.getResponseCode());
                 String errorStream = readErrorStream(conn);
                 if (errorStream.contains("NOT_ENOUGH_ATP")) {
                     log.debug("NOT_ENOUGH_ATP");
-                    return new HttpResponseImpl(conn.getResponseCode(), null, readErrorStream(conn), conn.getResponseMessage());
 
                 } else if (errorStream.contains("ENTITY_ALREADY_EXISTS")) {
                     log.debug("ENTITY_ALREADY_EXISTS");
-                    return new HttpResponseImpl(conn.getResponseCode(), null, readErrorStream(conn), conn.getResponseMessage());
                 }
-                return new HttpResponseImpl(conn.getResponseCode(), null, readErrorStream(conn), conn.getResponseMessage());
 
 
             }else{
-                String inputStream = readInputStream(conn);
-                return new HttpResponseImpl(conn.getResponseCode(), null, inputStream, conn.getResponseMessage());
             }
 
 
@@ -340,9 +334,8 @@ public class YantriksUtil {
             e.printStackTrace();
         }finally {
             conn.disconnect();
-
+            return new HttpResponseImpl(conn.getResponseCode(), null, readInputStream(conn), conn.getResponseMessage() ,readErrorStream(conn));
         }
-        return null;
     }
 
 
@@ -867,7 +860,7 @@ public class YantriksUtil {
     }
 
     public String determineErrorOrSuccessOnReservationPost(String reservationRestCallOutput) throws JSONException {
-        if (reservationRestCallOutput.equals("")) {
+        if (StringUtils.isEmpty(reservationRestCallOutput)) {
             return UrbanConstants.V_FAILURE;
         } else if (UrbanConstants.V_EXC_FAILURE.equals(reservationRestCallOutput)) {
             return UrbanConstants.V_EXC_FAILURE;

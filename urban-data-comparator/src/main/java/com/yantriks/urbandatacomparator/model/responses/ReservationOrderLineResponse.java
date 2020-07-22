@@ -1,4 +1,4 @@
-package com.yantriks.urbandatacomparator.model;
+package com.yantriks.urbandatacomparator.model.responses;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,14 +11,22 @@ import java.util.List;
 @Builder(toBuilder = true)
 @AllArgsConstructor
 @NoArgsConstructor
-public class YantriksLineReservationDetailsRequest {
+public class ReservationOrderLineResponse {
+
+    private String lineId;
 
     private String fulfillmentService;
+
     private String fulfillmentType;
-    private String lineId;
-    private String productId;
-    private String uom;
+
     private String orderLineRef;
-    private List<YantriksLocationReservationDetailsRequest> locationReservationDetails;
+
+    private String productId;
+
+    private String uom;
+
+    private List<ReservationProductLocationResponse> locationReservationDetails;
+
+    private List<ReservationGtinOrderLineResponse> gtinReservationDetails;
 
 }

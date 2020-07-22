@@ -1,5 +1,6 @@
-package com.yantriks.urbandatacomparator.model;
+package com.yantriks.urbandatacomparator.model.request;
 
+import com.yantriks.urbandatacomparator.model.request.ReservationDemandTypeRequest;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,8 +12,8 @@ import java.util.List;
 @Builder(toBuilder = true)
 @AllArgsConstructor
 @NoArgsConstructor
-public class YantriksLocationReservationDetailsRequest {
+public class ReservationProductLocationRequest {
     private String locationId;
     private String locationType;
-    private List<YantriksReservationDemandTypeRequest> demands;
+    private List<ReservationDemandTypeRequest> demands;
 }

@@ -1,13 +1,17 @@
 package com.yantriks.urbandatacomparator.configuration;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.yantriks.urbandatacomparator.route.UrbanCSVRoute;
 import com.yantriks.urbandatacomparator.sterlingapis.SterlingGetInvListCall;
 import com.yantriks.urbandatacomparator.sterlingapis.SterlingGetOrderListCall;
+import com.yantriks.urbandatacomparator.util.GenerateSignedJWTToken;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.CamelContext;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import javax.annotation.PostConstruct;
@@ -33,6 +37,7 @@ public class UrbanDataCompareAppConfig {
 
     public static String INSTANCE_ID = OffsetDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
 
+
     @Value("${graceful.shutdown.timeoutinseconds}")
     private long gracefulShutdownTimeoutInSeconds;
 
@@ -41,6 +46,8 @@ public class UrbanDataCompareAppConfig {
 
     @Value("${data.output.absolutedirectory}")
     private String absOPDirectoryPath;
+
+
 
     @Autowired
     UrbanCSVRoute urbanCsvRoute;
@@ -114,6 +121,16 @@ public class UrbanDataCompareAppConfig {
 //        Thread.sleep(1800000);
 //        camelContext.stop();
     }
+
+
+    @Bean
+    public ObjectMapper objectMapper(){
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        return objectMapper;
+
+    }
+
 
 }
 

@@ -3,8 +3,8 @@ package com.yantriks.urbandatacomparator.processor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sterlingcommerce.baseutil.SCXmlUtil;
 import com.yantriks.urbandatacomparator.model.*;
+import com.yantriks.urbandatacomparator.model.request.ReservationOrderRequest;
 import com.yantriks.urbandatacomparator.model.responses.HttpResponseImpl;
-import com.yantriks.urbandatacomparator.model.responses.YantriksAvailabilityErrorResponse;
 import com.yantriks.urbandatacomparator.util.UrbanConstants;
 import com.yantriks.urbandatacomparator.util.YantriksUtil;
 import com.yantriks.urbandatacomparator.validation.UrbanPopulateOrderReservationRequest;
@@ -19,6 +19,9 @@ import org.w3c.dom.Element;
 @Component
 @Slf4j
 public class UrbanToYantriksOrderDirectUpdate {
+
+    @Autowired
+    ObjectMapper objectMapper;
 
     @Value("${data.mode.comparegenerate}")
     private Boolean compareAndGenerate;
@@ -40,7 +43,7 @@ public class UrbanToYantriksOrderDirectUpdate {
 
 
     public UrbanCsvOutputData directUpdateToYantriks(Document inDoc) {
-        YantriksReservationRequest yantriksReservationRequest = urbanPopulateOrderReservationRequest.createReservationRequestFromOrderListOP(inDoc);
+        ReservationOrderRequest reservationOrderRequest = urbanPopulateOrderReservationRequest.createReservationRequestFromOrderListOP(inDoc);
         log.debug("OrderList XML :: " + SCXmlUtil.getString(inDoc));
         Element eleRoot = inDoc.getDocumentElement();
         Element eleOrder = SCXmlUtil.getChildElement(eleRoot, YantriksConstants.ORDER);
@@ -49,38 +52,36 @@ public class UrbanToYantriksOrderDirectUpdate {
         String enterpriseCode = eleOrder.getAttribute(YantriksConstants.A_ENTERPRISE_CODE);
         if (compareAndGenerate) {
             log.debug("CompareAndGenerate Flag is turned on, Hence writing it into CSV file");
-            log.debug("Logging for now instead of writing in CSV For Order :: " + yantriksReservationRequest.toString());
-            urbanCsvOutputData.setExtnReservationId(yantriksReservationRequest.getOrderId());
+            log.debug("Logging for now instead of writing in CSV For Order :: " + reservationOrderRequest.toString());
+            urbanCsvOutputData.setExtnReservationId(reservationOrderRequest.getOrderId());
             urbanCsvOutputData.setOrderId(orderId);
             urbanCsvOutputData.setEnterpriseCode(enterpriseCode);
             urbanCsvOutputData.setCompareAndGenerate(true);
             urbanCsvOutputData.setReservationStatus(UrbanConstants.RS_MISSING);
         } else {
-            if (yantriksReservationRequest.getLineReservationDetails().isEmpty()) {
+            if (reservationOrderRequest.getLineReservationDetails().isEmpty()) {
                 log.info("UrbanToYantriksOrderDirectUpdate: Line Reservation Details are empty hence not calling Yantriks API");
-                urbanCsvOutputData.setExtnReservationId(yantriksReservationRequest.getOrderId());
+                urbanCsvOutputData.setExtnReservationId(reservationOrderRequest.getOrderId());
                 urbanCsvOutputData.setOrderId(orderId);
                 urbanCsvOutputData.setEnterpriseCode(enterpriseCode);
                 urbanCsvOutputData.setCompareAndGenerate(true);
                 urbanCsvOutputData.setReservationStatus("STATUSES_OUT_OF_RESERVATION");
             } else {
-                String transactionType = determineTransactionType(yantriksReservationRequest.toString());
+                String transactionType = determineTransactionType(reservationOrderRequest.toString());
                 log.debug("CompareAndUpdate Flag is turned on, Hence calling yantriks api to update in Yantriks");
                 StringBuilder reserveUrl = new StringBuilder(UrbanConstants.YANTRIKS_RESERVE_URL);
                 reserveUrl = urbanURI.getReservationUrl(reserveUrl, UrbanConstants.SC_GLOBAL, transactionType,
                         true, false, false, true);
                 try {
-                    ObjectMapper jsonObjMapper = new ObjectMapper();
-                    String httpBody = jsonObjMapper.writeValueAsString(yantriksReservationRequest);
+                    String httpBody = objectMapper.writeValueAsString(reservationOrderRequest);
                     log.debug("HttpBody :: " + httpBody);
                     log.debug("Reserve URL :: " + reserveUrl);
                     HttpResponseImpl reservationResponse = yantriksUtil.callYantriksAPI(reserveUrl.toString(), UrbanConstants.HTTP_METHOD_POST, httpBody, UrbanConstants.V_PRODUCT_YAS);
 //                    String response = yantriksUtil.determineErrorOrSuccessOnReservationPost(reservationResponse);
                     log.debug("UrbanToYantriksOrderDirectUpdate: Yantriks Reservation Call failed with FAILURE response hence will write the request in file");
                     log.debug("UrbanToYantriksOrderDirectUpdate: Writing the request in file");
-                    ObjectMapper objOut = new ObjectMapper();
                     // YantriksAvailabilityErrorResponse yantriksAvailabilityErrorResponse = objOut.readValue(reservationResponse.getBody(), YantriksAvailabilityErrorResponse.class);
-                    urbanCsvOutputData.setExtnReservationId(yantriksReservationRequest.getOrderId());
+                    urbanCsvOutputData.setExtnReservationId(reservationOrderRequest.getOrderId());
                     urbanCsvOutputData.setOrderId(orderId);
                     urbanCsvOutputData.setEnterpriseCode(enterpriseCode);
                     urbanCsvOutputData.setCompareAndGenerate(false);
@@ -92,7 +93,7 @@ public class UrbanToYantriksOrderDirectUpdate {
                 } catch (Exception e) {
                     log.error("UrbanToYantriksOrderDirectUpdate : Exception caught while creating reservation : " + e.getMessage());
                     log.debug("UrbanToYantriksOrderDirectUpdate: Writing the request in file");
-                    urbanCsvOutputData.setExtnReservationId(yantriksReservationRequest.getOrderId());
+                    urbanCsvOutputData.setExtnReservationId(reservationOrderRequest.getOrderId());
                     urbanCsvOutputData.setOrderId(orderId);
                     urbanCsvOutputData.setEnterpriseCode(enterpriseCode);
                     urbanCsvOutputData.setCompareAndGenerate(false);

@@ -20,5 +20,7 @@ public class HttpResponseImpl implements Response {
 
     String message;
 
+    String error;
+
 
 }

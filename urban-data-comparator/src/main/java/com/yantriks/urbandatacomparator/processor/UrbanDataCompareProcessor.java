@@ -1,8 +1,11 @@
 package com.yantriks.urbandatacomparator.processor;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sterlingcommerce.baseutil.SCXmlUtil;
+import com.yantriks.urbandatacomparator.configuration.ReservationClient;
 import com.yantriks.urbandatacomparator.model.UrbanCsvData;
 import com.yantriks.urbandatacomparator.model.UrbanCsvOutputData;
+import com.yantriks.urbandatacomparator.model.responses.ReservationOrderResponse;
 import com.yantriks.urbandatacomparator.sterlingapis.SterlingAPIDocumentCreator;
 import com.yantriks.urbandatacomparator.sterlingapis.SterlingAPIUtil;
 import com.yantriks.urbandatacomparator.util.UrbanConstants;
@@ -11,12 +14,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 
 @Slf4j
 @Component
 public class UrbanDataCompareProcessor implements Processor {
+
+    @Autowired
+    ObjectMapper objectMapper;
 
 
     @Autowired
@@ -36,6 +43,9 @@ public class UrbanDataCompareProcessor implements Processor {
 
     @Autowired
     SterlingAPIUtil sterlingAPIUtil;
+
+    @Autowired
+    ReservationClient reservationClient;
 
     @Override
     public void process(Exchange exchange) throws Exception {
@@ -73,7 +83,8 @@ public class UrbanDataCompareProcessor implements Processor {
             parseSterlingReservationResponse(csvWriteData, orderId, enterpriseCode, reservationId, documentType, reservationUrl, getInventoryReservationList);
 
         } catch (Exception e) {
-            log.error("Exception Caught while calling getInventoryReservationList", e.getMessage());
+            e.printStackTrace();
+            log.error("Exception Caught while calling getInventoryReservationList {} , {}",reservationId, e.getMessage());
             log.error("Cause of Exception", e.getCause());
             yantriksUtil.defaultIncorrectDataToPopulate(csvWriteData, reservationId, enterpriseCode, orderId, UrbanConstants.ERR_GET_INV_RESERVATION_FAILED);
             isInvAPIFailed = true;
@@ -112,6 +123,7 @@ public class UrbanDataCompareProcessor implements Processor {
             parseOrderDetailResponse(csvWriteData, orderId, enterpriseCode, reservationId, reservationUrl, getOrderListOP);
 
         } catch (Exception e) {
+            e.printStackTrace();
             log.error("Exception while calling Sterling API : " + e.getMessage() + "Cause : " + e.getCause());
             yantriksUtil.defaultIncorrectDataToPopulate(csvWriteData, reservationId, enterpriseCode, orderId, UrbanConstants.ERR_GET_ORDER_LIST_FAILED);
         }
@@ -128,15 +140,19 @@ public class UrbanDataCompareProcessor implements Processor {
             String reservationResponse = null;
             try {
 //                                reservationResponse = yantriksUtil.getJSONFromFile("D:\\getReservation_fix.json");
-                reservationResponse = yantriksUtil.callYantriksGetOrDeleteAPI(reservationUrl.toString(), UrbanConstants.HTTP_METHOD_GET, UrbanConstants.V_PRODUCT_YAS);
+                //reservationResponse = yantriksUtil.callYantriksGetOrDeleteAPI(reservationUrl.toString(), UrbanConstants.HTTP_METHOD_GET, UrbanConstants.V_PRODUCT_YAS);
+                ResponseEntity<ReservationOrderResponse> reservationResponse2 = reservationClient.getReservation(reservationId);
+                reservationResponse = reservationResponse2.getBody() != null ? objectMapper.writeValueAsString( reservationResponse2.getBody() ): null;
                 log.debug("reservationResponse " + reservationResponse);
             } catch (Exception e) {
+                e.printStackTrace();
                 log.error("Exception Caught while calling get Reservation : " + e.getMessage());
                 log.error("Cause : " + e.getCause());
                 reservationResponse = UrbanConstants.V_EXC_FAILURE;
             }
             String response = yantriksUtil.determineErrorOrSuccessOnReservationPost(reservationResponse);
             log.debug("Response of determineErrorOrSuccessOnReservationPost : " + response);
+
             if (UrbanConstants.V_FAILURE.equals(response)) {
                 log.debug("UrbanDataCompareProcessor: Yantriks does not have reservation hence based on getOrderList call output updating yantriks");
                 urbanCsvOutputData = urbanToYantriksOrderDirectUpdate.directUpdateToYantriks(getOrderListOP);
@@ -156,7 +172,9 @@ public class UrbanDataCompareProcessor implements Processor {
         String reservationResponse;
         UrbanCsvOutputData urbanCsvOutputData;
         try {
-            reservationResponse = yantriksUtil.callYantriksGetOrDeleteAPI(reservationUrl.toString(), UrbanConstants.HTTP_METHOD_GET, UrbanConstants.V_PRODUCT_YAS);
+//            reservationResponse = yantriksUtil.callYantriksGetOrDeleteAPI(reservationUrl.toString(), UrbanConstants.HTTP_METHOD_GET, UrbanConstants.V_PRODUCT_YAS);
+            ResponseEntity<ReservationOrderResponse> reservationResponse2 = reservationClient.getReservation(reservationId);
+            reservationResponse = reservationResponse2.getBody() != null ? objectMapper.writeValueAsString(reservationResponse2.getBody()) : null;
         } catch (Exception e) {
             log.error("UrbanDataCompareProcessor: Yantriks Get Reservation failed");
             reservationResponse = UrbanConstants.V_EXC_FAILURE;
