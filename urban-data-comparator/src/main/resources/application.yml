@@ -13,14 +13,14 @@ ribbon:
 
 data:
   input:
-    absolutedirectory: D:\temp\input\
-    filename: sample_chris.csv
+    absolutedirectory: /Users/shash/Documents/urban/jars/
+    filename: sample2.csv
     option:
       noop: true
       maxMessagesPerPoll: 1
       delay: 1000
   output:
-    absolutedirectory: D:\temp\output\
+    absolutedirectory: /Users/shash/Documents/urban/jars/
     filename: output.csv
     option:
       fileexists: Append
@@ -93,5 +93,5 @@ feign:
     maxConnectionsPerRoute: 8
   retry:
     period: 60000
-    duration: 150000
+    duration: 360000
     maxAttempts: 5
