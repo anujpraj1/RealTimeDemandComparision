@@ -42,6 +42,7 @@ public class UrbanPopulateInventoryReservationRequestGenerator {
 
 
     public ReservationOrderRequest createReservationRequestFromInventoryReservation(Document inDoc) throws Exception {
+        log.debug("inDoc for createReservationRequestFromInventoryReservation"+SCXmlUtil.getString(inDoc));
         Element eleRoot = inDoc.getDocumentElement();
         NodeList nlInvReservations = eleRoot.getElementsByTagName(UrbanConstants.ELE_INV_RESERVATION);
         log.debug("UrbanToYantriksInvDirectUpdate: directUpdateToYantriks: Calculating the ExpirationTime and ExpirationTimeUnit");

@@ -13,14 +13,14 @@ ribbon:
 
 data:
   input:
-    absolutedirectory: /Users/shash/Documents/urban/jars/
-    filename: sample2.csv
+    absolutedirectory: D:\temp\input\
+    filename: sample_chris.csv
     option:
       noop: true
       maxMessagesPerPoll: 1
       delay: 1000
   output:
-    absolutedirectory: /Users/shash/Documents/urban/jars/
+    absolutedirectory: D:\temp\output\
     filename: output.csv
     option:
       fileexists: Append

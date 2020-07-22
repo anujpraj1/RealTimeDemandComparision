@@ -35,6 +35,7 @@ import feign.codec.ErrorDecoder;
 @Configuration
 @ImportAutoConfiguration({FeignAutoConfiguration.class})
 @EnableFeignClients
+public
 class CommonFeignConfig {
 
     //   @Value("${feign.loglevel:basic}")
