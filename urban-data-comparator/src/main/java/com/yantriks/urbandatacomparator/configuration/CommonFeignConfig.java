@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 
+import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryFactory;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -40,19 +41,19 @@ class CommonFeignConfig {
     //   @Value("${feign.loglevel:basic}")
     Logger.Level logLevel = Logger.Level.BASIC;
 
-    @Value("${feign.retry.period:100}")
+    @Value("${feign.retry.period:60000}")
     Integer period;
 
-    @Value("${feign.retry.duration:100}")
+    @Value("${feign.retry.duration:120000}")
     Integer duration;
 
-    @Value("${feign.retry.maxAttempts:2}")
+    @Value("${feign.retry.maxAttempts:3}")
     Integer maxAttempts;
 
-    @Value("${feign.coreService.connecttimeout:500}")
+    @Value("${feign.coreService.connecttimeout:5000}")
     private int connectTimeoutMillis;
 
-    @Value("${feign.coreService.readtimeout:10000}")
+    @Value("${feign.coreService.readtimeout:120000}")
     private int readTimeoutMillis;
 
     @Bean
@@ -74,6 +75,8 @@ class CommonFeignConfig {
     public HttpMessageConverters httpMessageConverters() {
         return new HttpMessageConverters(new MappingJackson2HttpMessageConverter());
     }
+
+
 
     @Bean
     public FeignErrorDecoder errorDecoder() {
@@ -125,6 +128,10 @@ class CommonFeignConfig {
                             message);
                 case 403:
                     return new FeignRequestException(HttpStatus.FORBIDDEN, message == null ? "Forbidden access" : message);
+                case 502:
+                    return new FeignRequestException(HttpStatus.BAD_GATEWAY, message == null ? "Bad Gateway" : message);
+
+
 
             }
 

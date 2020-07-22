@@ -14,7 +14,7 @@ ribbon:
 data:
   input:
     absolutedirectory: /Users/shash/Documents/urban/jars/
-    filename: small.csv
+    filename: sample2.csv
     option:
       noop: true
       maxMessagesPerPoll: 1

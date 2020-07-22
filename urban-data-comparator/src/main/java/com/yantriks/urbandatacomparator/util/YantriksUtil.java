@@ -1,11 +1,8 @@
 package com.yantriks.urbandatacomparator.util;
 
 import com.sterlingcommerce.baseutil.SCXmlUtil;
-import com.sun.net.httpserver.HttpsParameters;
-import com.yantra.httpclient.connection.ClientManager;
 import com.yantra.interop.japi.YIFClientCreationException;
 import com.yantra.yfc.core.YFCObject;
-import com.yantra.yfc.log.YFCLogCategory;
 import com.yantra.yfc.util.YFCCommon;
 import com.yantra.yfs.core.YFSSystem;
 import com.yantra.yfs.japi.YFSException;
@@ -14,27 +11,20 @@ import com.yantriks.urbandatacomparator.configuration.ReservationClient;
 import com.yantriks.urbandatacomparator.model.UrbanCsvOutputData;
 import com.yantriks.urbandatacomparator.model.UrbanURI;
 import com.yantriks.urbandatacomparator.model.responses.HttpResponseImpl;
-import com.yantriks.urbandatacomparator.processor.UrbanToYantriksOrderDirectUpdate;
 import com.yantriks.urbandatacomparator.sterlingapis.SterlingAPIDocumentCreator;
 import com.yantriks.urbandatacomparator.sterlingapis.SterlingAPIUtil;
-import com.yantriks.yih.adapter.util.YantriksCommonUtil;
 import com.yantriks.yih.adapter.util.YantriksConstants;
-import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.json.JSONException;
 import org.apache.commons.json.JSONObject;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
-import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
-import org.apache.log4j.Level;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -42,7 +32,6 @@ import org.springframework.util.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import javax.net.ssl.SSLParameters;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -107,15 +96,7 @@ public class YantriksUtil {
         }
     }
 
-    /***
-     *
-     * @param apiUrl
-     * @param httpMethod
-     * @param productToCall
-     * @return
-     * @throws YIFClientCreationException
-     * @throws ParserConfigurationException
-     */
+
 //    public String callYantriksGetOrDeleteAPIOld(String apiUrl, String httpMethod, String productToCall) throws YIFClientCreationException, ParserConfigurationException {
 //        //log.beginTimer("callYantriksGetOrDeleteAPI");
 //        log.debug("YantriksUtil: callYantriksGetOrDeleteAPI API :URL for Get or Delete :: " + apiUrl);
@@ -553,202 +534,194 @@ public class YantriksUtil {
         return YantriksCloseableHttpClientSingleton.createCloseableHttpClient();
     }
 
-    /**
-     * @param apiUrl
-     * @param httpMethod
-     * @param body
-     * @param productToCall
-     * @return
-     * @throws URISyntaxException
-     * @throws IOException
-     */
-    public String callYantriksAPIViaCloseable(String apiUrl, String httpMethod, String body, String productToCall)
-            throws URISyntaxException, IOException {
 
-        long beginMS = System.currentTimeMillis();
-        long msgID = System.nanoTime();
-        log.debug("Input to method");
-        log.debug("apiUrl : " + apiUrl);
-        log.debug("httpMethod : " + httpMethod);
-        log.debug("productToCall : " + productToCall);
-        log.debug("body : " + body);
-
-//        String protocol = YFSSystem
-//                .getProperty(YantriksConstants.YANTRIKSDOT + productToCall + YantriksConstants.DOTPROTOCOL);
-//        log.debug("protocol :"+protocol);
-//        String host = YFSSystem
-//                .getProperty(YantriksConstants.YANTRIKSDOT + productToCall + YantriksConstants.DOTHOSTNAME);
-//        log.debug("host :"+host);
-//        String port = YFSSystem.getProperty(YantriksConstants.YANTRIKSDOT + productToCall + YantriksConstants.DOTPORT);
-//        log.debug("port :"+port);
-//        String timeout = YFSSystem
-//                .getProperty(YantriksConstants.YANTRIKSDOT + productToCall + YantriksConstants.DOTTIMEOUT);
-//        log.debug("timeout :"+timeout);
-        URL url = getUrl(apiUrl, productToCall);
-
-//        int iPort=0;
-//        if (!YFCCommon.isVoid(port)) {
-//            iPort = Integer.parseInt(port);
-//        }
-        //setting uri properties
-//        URI uri = new URIBuilder()
-//                .setScheme(protocol)
-//                .setHost(host)
-//                .setPath(apiUrl)
-//                .setPort(iPort)
+//    public String callYantriksAPIViaCloseable(String apiUrl, String httpMethod, String body, String productToCall)
+//            throws URISyntaxException, IOException {
+//
+//        long beginMS = System.currentTimeMillis();
+//        long msgID = System.nanoTime();
+//        log.debug("Input to method");
+//        log.debug("apiUrl : " + apiUrl);
+//        log.debug("httpMethod : " + httpMethod);
+//        log.debug("productToCall : " + productToCall);
+//        log.debug("body : " + body);
+//
+////        String protocol = YFSSystem
+////                .getProperty(YantriksConstants.YANTRIKSDOT + productToCall + YantriksConstants.DOTPROTOCOL);
+////        log.debug("protocol :"+protocol);
+////        String host = YFSSystem
+////                .getProperty(YantriksConstants.YANTRIKSDOT + productToCall + YantriksConstants.DOTHOSTNAME);
+////        log.debug("host :"+host);
+////        String port = YFSSystem.getProperty(YantriksConstants.YANTRIKSDOT + productToCall + YantriksConstants.DOTPORT);
+////        log.debug("port :"+port);
+////        String timeout = YFSSystem
+////                .getProperty(YantriksConstants.YANTRIKSDOT + productToCall + YantriksConstants.DOTTIMEOUT);
+////        log.debug("timeout :"+timeout);
+//        URL url = getUrl(apiUrl, productToCall);
+//
+////        int iPort=0;
+////        if (!YFCCommon.isVoid(port)) {
+////            iPort = Integer.parseInt(port);
+////        }
+//        //setting uri properties
+////        URI uri = new URIBuilder()
+////                .setScheme(protocol)
+////                .setHost(host)
+////                .setPath(apiUrl)
+////                .setPort(iPort)
+////                .build();
+//
+////        StringBuilder urlBuilder = new StringBuilder();
+////        urlBuilder.append(protocol);
+////        urlBuilder.append("://");
+////        urlBuilder.append(host);
+////        if (!YFCObject.isVoid(port)) {
+////            urlBuilder.append(":");
+////            urlBuilder.append(port);
+////        }
+////        urlBuilder.append(apiUrl);
+//
+//        log.debug("URL via String Builder : " + url.toString());
+//
+//        int intTimeOut = timeout;
+//        RequestConfig requestConfig = RequestConfig.custom()
+//                .setConnectionRequestTimeout(intTimeOut)
+//                .setConnectTimeout(intTimeOut)
+//                .setSocketTimeout(intTimeOut)
 //                .build();
-
-//        StringBuilder urlBuilder = new StringBuilder();
-//        urlBuilder.append(protocol);
-//        urlBuilder.append("://");
-//        urlBuilder.append(host);
-//        if (!YFCObject.isVoid(port)) {
-//            urlBuilder.append(":");
-//            urlBuilder.append(port);
+//
+//        //creating a CloseableHttpClient Singleton object
+//        CloseableHttpClient closeableHttpClient = YantriksCloseableHttpClientSingleton.createCloseableHttpClient();
+//        ;
+//        String result = null;
+//        try {
+//            // invoking the api
+//            int iStatusCode = Integer.MIN_VALUE;
+//            CloseableHttpResponse httpResponse = null;
+//            if (YantriksConstants.YIH_HTTP_METHOD_POST.equals(httpMethod)) {
+//                log.debug("Call is for HTTP Method : " + httpMethod);
+//                final HttpPost httpPost = new HttpPost(url.toString());
+//                httpPost.setEntity(new StringEntity(body));
+//                httpPost.setConfig(requestConfig);
+//                httpPost.setHeader(HttpHeaders.CONTENT_TYPE, UrbanConstants.APPLICATION_JSON);
+//                httpPost.setHeader(HttpHeaders.ACCEPT, UrbanConstants.APPLICATION_JSON);
+//
+//                String strJWTToken = null;
+//                String strIsSecurityEnabled = "true";//YFSSystem.getProperty(YantriksConstants.YIH_IS_API_SECURITY_ENABLED);
+//                log.debug(" strIsSecurityEnabled " + strIsSecurityEnabled);
+//                if (YantriksConstants.CONST_TRUE.equalsIgnoreCase(strIsSecurityEnabled)) {
+//                    strJWTToken = GenerateSignedJWTToken.getJWTTokenStr(strSecretKey, strSkid, strExpirytime);
+//                    log.debug("strJWTToken generated :" + strJWTToken);
+//                    httpPost.setHeader(HttpHeaders.AUTHORIZATION, UrbanConstants.HTTP_AUTH_BEARER + strJWTToken);
+//                }
+//                httpResponse = closeableHttpClient.execute(httpPost);
+//            } else if (YantriksConstants.HTTP_METHOD_PUT.equals(httpMethod)) {
+//                log.debug("Call is for HTTP Method : " + httpMethod);
+//                final HttpPut httpPut = new HttpPut(url.toString());
+//                if (!YantriksConstants.STR_BLANK.equals(body)) {
+//                    httpPut.setEntity(new StringEntity(body));
+//                }
+//                httpPut.setConfig(requestConfig);
+//                httpPut.setHeader(HttpHeaders.CONTENT_TYPE, UrbanConstants.APPLICATION_JSON);
+//                httpPut.setHeader(HttpHeaders.ACCEPT, UrbanConstants.APPLICATION_JSON);
+//                log.debug("httpPut " + httpPut);
+//
+//                String strJWTToken = null;
+//                String strIsSecurityEnabled = "true";// YFSSystem.getProperty(YantriksConstants.YIH_IS_API_SECURITY_ENABLED);
+//                log.debug(" strIsSecurityEnabled " + strIsSecurityEnabled);
+//                if (YantriksConstants.CONST_TRUE.equalsIgnoreCase(strIsSecurityEnabled)) {
+//                    strJWTToken = GenerateSignedJWTToken.getJWTTokenStr(strSecretKey, strSkid, strExpirytime);
+//                    log.debug("strJWTToken generated :" + strJWTToken);
+//                    httpPut.setHeader(HttpHeaders.AUTHORIZATION, UrbanConstants.HTTP_AUTH_BEARER + strJWTToken);
+//                }
+//                httpResponse = closeableHttpClient.execute(httpPut);
+//            } else if (YantriksConstants.HTTP_METHOD_DELETE.equals(httpMethod)) {
+//                log.debug("Call is for HTTP Method : " + httpMethod);
+//                final HttpDelete httpDelete = new HttpDelete(url.toString());
+//                httpDelete.setConfig(requestConfig);
+//                httpDelete.setHeader(HttpHeaders.CONTENT_TYPE, UrbanConstants.APPLICATION_JSON);
+//                httpDelete.setHeader(HttpHeaders.ACCEPT, UrbanConstants.APPLICATION_JSON);
+//                log.debug("httpDelete " + httpDelete);
+//
+//                String strJWTToken = null;
+//                String strIsSecurityEnabled = "true";//YFSSystem.getProperty(YantriksConstants.YIH_IS_API_SECURITY_ENABLED);
+//                log.debug(" strIsSecurityEnabled " + strIsSecurityEnabled);
+//                if (YantriksConstants.CONST_TRUE.equalsIgnoreCase(strIsSecurityEnabled)) {
+//                    strJWTToken = GenerateSignedJWTToken.getJWTTokenStr(strSecretKey, strSkid, strExpirytime);
+//                    log.debug("strJWTToken generated :" + strJWTToken);
+//                    httpDelete.setHeader(HttpHeaders.AUTHORIZATION, UrbanConstants.HTTP_AUTH_BEARER + strJWTToken);
+//                }
+//                httpResponse = closeableHttpClient.execute(httpDelete);
+//            } else {
+//                log.debug("Call is for HTTP Method : " + httpMethod);
+//                final HttpGet httpGet = new HttpGet(url.toString());
+//                httpGet.setConfig(requestConfig);
+//                httpGet.setHeader(HttpHeaders.CONTENT_TYPE, UrbanConstants.APPLICATION_JSON);
+//                httpGet.setHeader(HttpHeaders.ACCEPT, UrbanConstants.APPLICATION_JSON);
+//                log.debug("httpGet " + httpGet);
+//
+//                String strJWTToken = null;
+//                String strIsSecurityEnabled = "true";// YFSSystem.getProperty(YantriksConstants.YIH_IS_API_SECURITY_ENABLED);
+//                log.debug(" strIsSecurityEnabled " + strIsSecurityEnabled);
+//                if (YantriksConstants.CONST_TRUE.equalsIgnoreCase(strIsSecurityEnabled)) {
+//                    strJWTToken = GenerateSignedJWTToken.getJWTTokenStr(strSecretKey, strSkid, strExpirytime);
+//                    log.debug("strJWTToken generated :" + strJWTToken);
+//                    httpGet.setHeader(HttpHeaders.AUTHORIZATION, UrbanConstants.HTTP_AUTH_BEARER + strJWTToken);
+//                }
+//                httpResponse = closeableHttpClient.execute(httpGet);
+//            }
+//            try {
+//                iStatusCode = httpResponse.getStatusLine().getStatusCode();
+//                HttpEntity entity = httpResponse.getEntity();
+//                if (entity != null) {
+//                    result = EntityUtils.toString(entity);
+//                }
+//            } catch (Exception e) {
+//                log.error("Exception Caught : " + e.getMessage());
+//                throw e;
+//            } finally {
+//                httpResponse.close();
+//            }
+//            log.debug("Response Code : " + iStatusCode);
+//            log.debug("Response received :" + result);
+//
+//            if (iStatusCode == 200 || iStatusCode == 201) {
+//                log.debug("succesfull response received :" + iStatusCode);
+//                log.info("Response : " + result);
+//                return result;
+//            } else if (iStatusCode == 400) {
+//
+//                JSONObject errObj = new JSONObject(result);
+//                String messageResponse = errObj.getString(UrbanConstants.JSON_ATTR_MESSAGE);
+//                String errorResponse = errObj.getString(UrbanConstants.JSON_ATTR_ERROR);
+//                log.debug("Message Response : " + messageResponse);
+//                log.debug("Error Response : " + errorResponse);
+//
+//                if (messageResponse.contains("NOT_ENOUGH_ATP")) {
+//                    log.debug("NOT_ENOUGH_ATP");
+//                    return "NOT_ENOUGH_ATP";
+//                } else if (messageResponse.contains("ENTITY_ALREADY_EXISTS")) {
+//                    log.debug("ENTITY_ALREADY_EXISTS");
+//                    return messageResponse;
+//                }
+//
+//            } else if (iStatusCode == 409) {
+//                JSONObject errObj = new JSONObject(result);
+//                log.debug("Record Already exists in Yantriks hence will return CONFLICT as response");
+//                return UrbanConstants.ENTITY_ALREDY_EXISTS;
+//            } else if (iStatusCode == 204) {
+//                log.debug("No Content Found");
+//                return "";//UrbanConstants.V_NO_CONTENT_FOUND;
+//            } else {
+//                log.debug("Returning Response as Failure");
+//                return "";//YantriksConstants.V_FAILURE;
+//            }
+//        } catch (Exception exc) {
+//            log.error("Error :" + exc.getMessage() + " URL: " + apiUrl + " for Method :: " + httpMethod);
+//            throw new YFSException("Exception is thrown from yantriks API :: " + exc.getMessage());
 //        }
-//        urlBuilder.append(apiUrl);
-
-        log.debug("URL via String Builder : " + url.toString());
-
-        int intTimeOut = timeout;
-        RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectionRequestTimeout(intTimeOut)
-                .setConnectTimeout(intTimeOut)
-                .setSocketTimeout(intTimeOut)
-                .build();
-
-        //creating a CloseableHttpClient Singleton object
-        CloseableHttpClient closeableHttpClient = YantriksCloseableHttpClientSingleton.createCloseableHttpClient();
-        ;
-        String result = null;
-        try {
-            // invoking the api
-            int iStatusCode = Integer.MIN_VALUE;
-            CloseableHttpResponse httpResponse = null;
-            if (YantriksConstants.YIH_HTTP_METHOD_POST.equals(httpMethod)) {
-                log.debug("Call is for HTTP Method : " + httpMethod);
-                final HttpPost httpPost = new HttpPost(url.toString());
-                httpPost.setEntity(new StringEntity(body));
-                httpPost.setConfig(requestConfig);
-                httpPost.setHeader(HttpHeaders.CONTENT_TYPE, UrbanConstants.APPLICATION_JSON);
-                httpPost.setHeader(HttpHeaders.ACCEPT, UrbanConstants.APPLICATION_JSON);
-
-                String strJWTToken = null;
-                String strIsSecurityEnabled = "true";//YFSSystem.getProperty(YantriksConstants.YIH_IS_API_SECURITY_ENABLED);
-                log.debug(" strIsSecurityEnabled " + strIsSecurityEnabled);
-                if (YantriksConstants.CONST_TRUE.equalsIgnoreCase(strIsSecurityEnabled)) {
-                    strJWTToken = GenerateSignedJWTToken.getJWTTokenStr(strSecretKey, strSkid, strExpirytime);
-                    log.debug("strJWTToken generated :" + strJWTToken);
-                    httpPost.setHeader(HttpHeaders.AUTHORIZATION, UrbanConstants.HTTP_AUTH_BEARER + strJWTToken);
-                }
-                httpResponse = closeableHttpClient.execute(httpPost);
-            } else if (YantriksConstants.HTTP_METHOD_PUT.equals(httpMethod)) {
-                log.debug("Call is for HTTP Method : " + httpMethod);
-                final HttpPut httpPut = new HttpPut(url.toString());
-                if (!YantriksConstants.STR_BLANK.equals(body)) {
-                    httpPut.setEntity(new StringEntity(body));
-                }
-                httpPut.setConfig(requestConfig);
-                httpPut.setHeader(HttpHeaders.CONTENT_TYPE, UrbanConstants.APPLICATION_JSON);
-                httpPut.setHeader(HttpHeaders.ACCEPT, UrbanConstants.APPLICATION_JSON);
-                log.debug("httpPut " + httpPut);
-
-                String strJWTToken = null;
-                String strIsSecurityEnabled = "true";// YFSSystem.getProperty(YantriksConstants.YIH_IS_API_SECURITY_ENABLED);
-                log.debug(" strIsSecurityEnabled " + strIsSecurityEnabled);
-                if (YantriksConstants.CONST_TRUE.equalsIgnoreCase(strIsSecurityEnabled)) {
-                    strJWTToken = GenerateSignedJWTToken.getJWTTokenStr(strSecretKey, strSkid, strExpirytime);
-                    log.debug("strJWTToken generated :" + strJWTToken);
-                    httpPut.setHeader(HttpHeaders.AUTHORIZATION, UrbanConstants.HTTP_AUTH_BEARER + strJWTToken);
-                }
-                httpResponse = closeableHttpClient.execute(httpPut);
-            } else if (YantriksConstants.HTTP_METHOD_DELETE.equals(httpMethod)) {
-                log.debug("Call is for HTTP Method : " + httpMethod);
-                final HttpDelete httpDelete = new HttpDelete(url.toString());
-                httpDelete.setConfig(requestConfig);
-                httpDelete.setHeader(HttpHeaders.CONTENT_TYPE, UrbanConstants.APPLICATION_JSON);
-                httpDelete.setHeader(HttpHeaders.ACCEPT, UrbanConstants.APPLICATION_JSON);
-                log.debug("httpDelete " + httpDelete);
-
-                String strJWTToken = null;
-                String strIsSecurityEnabled = "true";//YFSSystem.getProperty(YantriksConstants.YIH_IS_API_SECURITY_ENABLED);
-                log.debug(" strIsSecurityEnabled " + strIsSecurityEnabled);
-                if (YantriksConstants.CONST_TRUE.equalsIgnoreCase(strIsSecurityEnabled)) {
-                    strJWTToken = GenerateSignedJWTToken.getJWTTokenStr(strSecretKey, strSkid, strExpirytime);
-                    log.debug("strJWTToken generated :" + strJWTToken);
-                    httpDelete.setHeader(HttpHeaders.AUTHORIZATION, UrbanConstants.HTTP_AUTH_BEARER + strJWTToken);
-                }
-                httpResponse = closeableHttpClient.execute(httpDelete);
-            } else {
-                log.debug("Call is for HTTP Method : " + httpMethod);
-                final HttpGet httpGet = new HttpGet(url.toString());
-                httpGet.setConfig(requestConfig);
-                httpGet.setHeader(HttpHeaders.CONTENT_TYPE, UrbanConstants.APPLICATION_JSON);
-                httpGet.setHeader(HttpHeaders.ACCEPT, UrbanConstants.APPLICATION_JSON);
-                log.debug("httpGet " + httpGet);
-
-                String strJWTToken = null;
-                String strIsSecurityEnabled = "true";// YFSSystem.getProperty(YantriksConstants.YIH_IS_API_SECURITY_ENABLED);
-                log.debug(" strIsSecurityEnabled " + strIsSecurityEnabled);
-                if (YantriksConstants.CONST_TRUE.equalsIgnoreCase(strIsSecurityEnabled)) {
-                    strJWTToken = GenerateSignedJWTToken.getJWTTokenStr(strSecretKey, strSkid, strExpirytime);
-                    log.debug("strJWTToken generated :" + strJWTToken);
-                    httpGet.setHeader(HttpHeaders.AUTHORIZATION, UrbanConstants.HTTP_AUTH_BEARER + strJWTToken);
-                }
-                httpResponse = closeableHttpClient.execute(httpGet);
-            }
-            try {
-                iStatusCode = httpResponse.getStatusLine().getStatusCode();
-                HttpEntity entity = httpResponse.getEntity();
-                if (entity != null) {
-                    result = EntityUtils.toString(entity);
-                }
-            } catch (Exception e) {
-                log.error("Exception Caught : " + e.getMessage());
-                throw e;
-            } finally {
-                httpResponse.close();
-            }
-            log.debug("Response Code : " + iStatusCode);
-            log.debug("Response received :" + result);
-
-            if (iStatusCode == 200 || iStatusCode == 201) {
-                log.debug("succesfull response received :" + iStatusCode);
-                log.info("Response : " + result);
-                return result;
-            } else if (iStatusCode == 400) {
-
-                JSONObject errObj = new JSONObject(result);
-                String messageResponse = errObj.getString(UrbanConstants.JSON_ATTR_MESSAGE);
-                String errorResponse = errObj.getString(UrbanConstants.JSON_ATTR_ERROR);
-                log.debug("Message Response : " + messageResponse);
-                log.debug("Error Response : " + errorResponse);
-
-                if (messageResponse.contains("NOT_ENOUGH_ATP")) {
-                    log.debug("NOT_ENOUGH_ATP");
-                    return "NOT_ENOUGH_ATP";
-                } else if (messageResponse.contains("ENTITY_ALREADY_EXISTS")) {
-                    log.debug("ENTITY_ALREADY_EXISTS");
-                    return messageResponse;
-                }
-
-            } else if (iStatusCode == 409) {
-                JSONObject errObj = new JSONObject(result);
-                log.debug("Record Already exists in Yantriks hence will return CONFLICT as response");
-                return UrbanConstants.ENTITY_ALREDY_EXISTS;
-            } else if (iStatusCode == 204) {
-                log.debug("No Content Found");
-                return "";//UrbanConstants.V_NO_CONTENT_FOUND;
-            } else {
-                log.debug("Returning Response as Failure");
-                return "";//YantriksConstants.V_FAILURE;
-            }
-        } catch (Exception exc) {
-            log.error("Error :" + exc.getMessage() + " URL: " + apiUrl + " for Method :: " + httpMethod);
-            throw new YFSException("Exception is thrown from yantriks API :: " + exc.getMessage());
-        }
-        return result;
-    }
+//        return result;
+//    }
 
     private URL getUrl(String apiUrl, String productToCall) throws MalformedURLException {
         URL url = null;
@@ -890,28 +863,45 @@ public class YantriksUtil {
     }
 
     public void defaultIncorrectDataToPopulate(StringBuilder csvWriteData, String reservationId, String enterpriseCode, String orderId, String errorResponse) {
-        csvWriteData.append(reservationId);
-        csvWriteData.append("|");
-        csvWriteData.append(enterpriseCode);
-        csvWriteData.append("|");
-        csvWriteData.append(orderId);
-        csvWriteData.append("|");
-        csvWriteData.append(errorResponse);
+        UrbanCsvOutputData urbanCsvData = new UrbanCsvOutputData();
+        urbanCsvData.setExtnReservationId(reservationId);
+        urbanCsvData.setEnterpriseCode(enterpriseCode);
+        urbanCsvData.setOrderId(orderId);
+        urbanCsvData.setError(errorResponse);
+        buildCSVData("DATA",csvWriteData, urbanCsvData);
+
+
+//        csvWriteData.append(reservationId);
+//        csvWriteData.append("|");
+//        csvWriteData.append(enterpriseCode);
+//        csvWriteData.append("|");
+//        csvWriteData.append(orderId);
+//        csvWriteData.append("|");
+//        csvWriteData.append(errorResponse);
     }
 
     public void dataFromCompareAndGenerate(StringBuilder csvWriteData, UrbanCsvOutputData urbanCsvData) {
-        csvWriteData.append(urbanCsvData.getReservationStatus());
-        csvWriteData.append("|");
-        csvWriteData.append(urbanCsvData.getExtnReservationId());
-        csvWriteData.append("|");
-        csvWriteData.append(urbanCsvData.getEnterpriseCode());
-        csvWriteData.append("|");
-        csvWriteData.append(urbanCsvData.getOrderId());
+//        csvWriteData.append(urbanCsvData.getReservationStatus());
+//        csvWriteData.append("|");
+//        csvWriteData.append(urbanCsvData.getExtnReservationId());
+//        csvWriteData.append("|");
+//        csvWriteData.append(urbanCsvData.getEnterpriseCode());
+//        csvWriteData.append("|");
+//        csvWriteData.append(urbanCsvData.getOrderId());
+        buildCSVData("CNG",csvWriteData, urbanCsvData);
+
 
     }
 
     public void dataFromCompareAndUpdate(StringBuilder csvWriteData, UrbanCsvOutputData urbanCsvData) {
+        buildCSVData("CNU",csvWriteData, urbanCsvData);
+
+    }
+
+    public void buildCSVData(String label, StringBuilder csvWriteData, UrbanCsvOutputData urbanCsvData) {
         csvWriteData.append(urbanCsvData.getReservationResponseCode());
+        csvWriteData.append("|");
+        csvWriteData.append(label);
         csvWriteData.append("|");
         csvWriteData.append(urbanCsvData.getMessage());
         csvWriteData.append("|");
@@ -922,7 +912,6 @@ public class YantriksUtil {
         csvWriteData.append(urbanCsvData.getOrderId());
         csvWriteData.append("|");
         csvWriteData.append(urbanCsvData.getError());
-
     }
 
     public void populateCSVData(StringBuilder csvWriteData, UrbanCsvOutputData urbanCsvOutputData) {

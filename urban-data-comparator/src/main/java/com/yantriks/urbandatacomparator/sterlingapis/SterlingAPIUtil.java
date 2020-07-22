@@ -41,7 +41,7 @@ public class SterlingAPIUtil {
         log.debug("invokeSterlingAPI : InputDoc : " + SCXmlUtil.getString(inDoc));
         YIFApi api = YIFClientFactory.getInstance().getApi();
         Document outputDoc = api.invoke(env, apiName, inDoc);
-        log.debug("invokeSterlingAPI : OutputDoc : " + XmlUtils.getString(outputDoc));
+//        log.debug("invokeSterlingAPI : OutputDoc : " + XmlUtils.getString(outputDoc));
         return outputDoc;
     }
 
@@ -52,7 +52,7 @@ public class SterlingAPIUtil {
         YIFApi api = YIFClientFactory.getInstance().getApi();
         env.setApiTemplate(apiName, template);
         Document outputDoc = api.invoke(env, apiName, inDoc);
-        log.debug("invokeSterlingAPI : OutputDoc : " + SCXmlUtil.getString(outputDoc));
+//        log.debug("invokeSterlingAPI : OutputDoc : " + SCXmlUtil.getString(outputDoc));
         return outputDoc;
     }
 
