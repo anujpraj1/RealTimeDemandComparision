@@ -13,14 +13,14 @@ ribbon:
 
 data:
   input:
-    absolutedirectory: D:\temp\input\
-    filename: sample_0Error.csv
+    absolutedirectory: /Users/shash/Documents/urban/jars/
+    filename: small.csv
     option:
       noop: true
       maxMessagesPerPoll: 1
       delay: 1000
   output:
-    absolutedirectory: D:\temp\output\
+    absolutedirectory: /Users/shash/Documents/urban/jars/
     filename: output.csv
     option:
       fileexists: Append
@@ -90,8 +90,8 @@ security:
 feign:
   httpclient:
     maxConnections: 10
-    maxConnectionsPerRoute: 5
+    maxConnectionsPerRoute: 7
   retry:
-    period: 40000
+    period: 50000
     duration: 360000
-    maxAttempts: 3
+    maxAttempts: 5

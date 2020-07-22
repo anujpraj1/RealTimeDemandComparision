@@ -66,7 +66,7 @@ public class UrbanToYantriksOrderDirectUpdate {
         } else {
             if (reservationOrderRequest.getLineReservationDetails().isEmpty()) {
                 log.info("UrbanToYantriksOrderDirectUpdate: Line Reservation Details are empty hence not calling Yantriks API");
-                urbanCsvOutputData.setMessage("Lines are cancelled in sterling");
+                urbanCsvOutputData.setMessage("Cancelled Line");
                 urbanCsvOutputData.setCompareAndGenerate(true);
 //                urbanCsvOutputData.setReservationStatus(UrbanConstants.MSG_NO_UPDATE_REQUIRED);
                 urbanCsvOutputData.setReservationStatus("STATUSES_OUT_OF_RESERVATION");
