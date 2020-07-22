@@ -214,7 +214,7 @@ public class UrbanToYantriksCompareUpdate {
                             log.debug("mkaing a POST call to update the reservation lineReserveUrl " + lineReserveUrl.toString() + " UrbanConstants.HTTP_METHOD_POST " + UrbanConstants.HTTP_METHOD_POST + " httpBody :" + httpBody + " UrbanConstants.V_PRODUCT_YAS) :" + UrbanConstants.V_PRODUCT_YAS);
                             //HttpResponseImpl resvResponse = yantriksUtil.callYantriksAPI(lineReserveUrl.toString(), UrbanConstants.HTTP_METHOD_POST, httpBody, UrbanConstants.V_PRODUCT_YAS);
                             ResponseEntity<ReservationProductLocationResponse> response = reservationClient.createReservation(UrbanConstants.SC_GLOBAL, transactionType, reservationOrderRequest, true, false, false, true);
-                            urbanDataCompareProcessor.processYantriksReservationResponse(response,inDoc,yantriksGetResponse,reservationId);
+                            urbanDataCompareProcessor.processYantriksReservationResponse(response,inDoc,yantriksGetResponse,reservationId,false);
                             urbanCsvOutputData.setCompareAndGenerate(false);
                             urbanCsvOutputData.setReservationResponseCode(response.getStatusCodeValue());
                             urbanCsvOutputData.setError(null);
