@@ -7,27 +7,41 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 @Data
 @Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
-public class YantriksAvailabilityErrorResponse {
+public class ReservationOrderResponse {
 
     private String orgId;
-    private String path;
-    private List<YantriksErrorLineResponse> errorLines;
-    private String error;
-    private String message;
-    private long status;
-    private String timestamp;
-    private String updateTime;
-    private String updateUser;
+
+    private LocalDateTime expirationTime;
+
+    private TimeUnit expirationTimeUnit;
+
+    private String orderId;
+
+    private String orderType;
+
+    private String sellingChannel;
+
+    private List<ReservationOrderLineResponse> lineReservationDetails;
+
+    private Set<ReservationLineErrorResponse> failedLines;
 
     Map<String, Object> unknownFields = new HashMap<>();
+
+    private ZonedDateTime updateTime;
+    private String updateUser;
+
 
     @JsonAnyGetter
     public Map<String, Object> otherFields() {
@@ -38,5 +52,4 @@ public class YantriksAvailabilityErrorResponse {
     public void setOtherField(String name, Object value) {
         unknownFields.put(name, value);
     }
-
 }

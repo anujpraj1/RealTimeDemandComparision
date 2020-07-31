@@ -165,13 +165,15 @@ public class UrbanConstants {
     public static final String A_PRIME_LINE_NO = "PrimeLineNo";
     public static final String EXTN_RESERVATION_ID = "ExtnReservationID";
 
-    
     // Statuses to be utilized for Demands
     public static final ImmutableList<String> IM_LIST_SHIPPED_STATUSES = ImmutableList.of("3700","3700.00.200","9000","3700.01");
     public static final ImmutableList<String> IM_LIST_ALLOCATED_STATUSES = ImmutableList.of("3350", "3200");
     public static final ImmutableList<String> IM_LIST_BACKORDER_STATUSES = ImmutableList.of("1300", "1300.100", "1400");
     public static final ImmutableList<String> IM_LIST_OPEN_STATUSES = ImmutableList.of("1100");
     public static final ImmutableList<String> IM_LIST_SCHEDULED_STATUSES = ImmutableList.of("1500");
+    public static final ImmutableList<String> IM_LIST_TO_INITIAL_STATUSES = ImmutableList.of("2160,2160.00.100","2160.00.200","2160.00.300","2160.01");
+    public static final ImmutableList<String> IM_LIST_TO_TERMINAL_STATUSES = ImmutableList.of("2160.01.100","3950.01");
+
 
     public static final String API_GET_SHIP_NODE_LIST = "getShipNodeList";
 
@@ -200,6 +202,12 @@ public class UrbanConstants {
     public static final ImmutableList<String> IM_LIST_GET_RESERVATION_FAILURES = ImmutableList.of("FAILURE", "NON_RETRY_EXCEPTION");
     public static final String NOT_ENOUGH_ATP="NOT_ENOUGH_ATP";
     public static final int RC_400 = 400;
+    public static final String EXTN_NODECLASS = "ExtnNodeClass";
+    public static final String HTTP_AUTH_BEARER="Bearer";
+    public static final String APPLICATION_JSON="application/json";
+    public static final String CONTENT_TYPE="Content-Type";
+    public static final String ENTITY_ALREDY_EXISTS="ENTITY_ALREDY_EXISTS";
+
 
 
 

@@ -2,10 +2,10 @@ package com.yantriks.urbandatacomparator.validation;
 
 
 import com.sterlingcommerce.baseutil.SCXmlUtil;
-import com.yantriks.urbandatacomparator.model.YantriksLineReservationDetailsRequest;
-import com.yantriks.urbandatacomparator.model.YantriksLocationReservationDetailsRequest;
-import com.yantriks.urbandatacomparator.model.YantriksReservationDemandTypeRequest;
-import com.yantriks.urbandatacomparator.model.YantriksReservationRequest;
+import com.yantriks.urbandatacomparator.model.request.ReservationOrderLineRequest;
+import com.yantriks.urbandatacomparator.model.request.ReservationProductLocationRequest;
+import com.yantriks.urbandatacomparator.model.request.ReservationDemandTypeRequest;
+import com.yantriks.urbandatacomparator.model.request.ReservationOrderRequest;
 import com.yantriks.urbandatacomparator.util.UrbanConstants;
 import com.yantriks.urbandatacomparator.util.YantriksUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -17,12 +17,15 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import java.text.SimpleDateFormat;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Component
 @Slf4j
-public class UrbanPopulateInventoryReservationRequest {
+public class UrbanPopulateInventoryReservationRequestGenerator {
 
 
     @Value("${yantriks.default.fulfillmentservice}")
@@ -38,7 +41,8 @@ public class UrbanPopulateInventoryReservationRequest {
     YantriksUtil yantriksUtil;
 
 
-    public YantriksReservationRequest createReservationRequestFromInventoryReservation(Document inDoc) throws Exception {
+    public ReservationOrderRequest createReservationRequestFromInventoryReservation(Document inDoc) throws Exception {
+        log.debug("inDoc for createReservationRequestFromInventoryReservation"+SCXmlUtil.getString(inDoc));
         Element eleRoot = inDoc.getDocumentElement();
         NodeList nlInvReservations = eleRoot.getElementsByTagName(UrbanConstants.ELE_INV_RESERVATION);
         log.debug("UrbanToYantriksInvDirectUpdate: directUpdateToYantriks: Calculating the ExpirationTime and ExpirationTimeUnit");
@@ -55,7 +59,7 @@ public class UrbanPopulateInventoryReservationRequest {
                 "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US);
 
         int counter = 1;
-        List<YantriksLineReservationDetailsRequest> lineReservationDetailsRequests = new ArrayList<>();
+        List<ReservationOrderLineRequest> lineReservationDetailsRequests = new ArrayList<>();
         for (int i = 0; i< nlInvReservations.getLength(); i++) {
             Element currInvReservation = (Element) nlInvReservations.item(i);
             Element eleItem = SCXmlUtil.getChildElement(currInvReservation, UrbanConstants.E_ITEM);
@@ -68,25 +72,25 @@ public class UrbanPopulateInventoryReservationRequest {
 
             boolean existInLineReservation = checkAndUpdateLineReservations(lineReservationDetailsRequests, itemId, shipNode, shipDate.substring(0,10), locationType, qtyToPut);
             if (!existInLineReservation) {
-                List<YantriksReservationDemandTypeRequest> reservationDemandTypeRequests = new ArrayList<>();
-                YantriksReservationDemandTypeRequest yantriksReservationDemandTypeRequest = YantriksReservationDemandTypeRequest.builder()
+                List<ReservationDemandTypeRequest> reservationDemandTypeRequests = new ArrayList<>();
+                ReservationDemandTypeRequest reservationDemandTypeRequest = ReservationDemandTypeRequest.builder()
                         .demandType(UrbanConstants.DT_RESERVED)
                         .quantity(qtyToPut)
                         .reservationDate(currInvReservation.getAttribute(UrbanConstants.A_SHIP_DATE).substring(0,10))
                         .segment(segment)
                         .build();
-                reservationDemandTypeRequests.add(yantriksReservationDemandTypeRequest);
+                reservationDemandTypeRequests.add(reservationDemandTypeRequest);
 
-                List<YantriksLocationReservationDetailsRequest> locationReservationDetailsRequests = new ArrayList<>();
-                YantriksLocationReservationDetailsRequest yantriksLocationReservationDetailsRequest = YantriksLocationReservationDetailsRequest.builder()
+                List<ReservationProductLocationRequest> locationReservationDetailsRequests = new ArrayList<>();
+                ReservationProductLocationRequest reservationProductLocationRequest = ReservationProductLocationRequest.builder()
                         .locationId(shipNode)
                         .locationType(locationType)
                         .demands(reservationDemandTypeRequests)
                         .build();
-                log.debug("yantriksLineReservationDetailsRequest.getLocationReservationDetails()"+yantriksLocationReservationDetailsRequest.getDemands().isEmpty());
-                locationReservationDetailsRequests.add(yantriksLocationReservationDetailsRequest);
+                log.debug("yantriksLineReservationDetailsRequest.getLocationReservationDetails()"+ reservationProductLocationRequest.getDemands().isEmpty());
+                locationReservationDetailsRequests.add(reservationProductLocationRequest);
 
-                YantriksLineReservationDetailsRequest yantriksLineReservationDetailsRequest = YantriksLineReservationDetailsRequest.builder()
+                ReservationOrderLineRequest reservationOrderLineRequest = ReservationOrderLineRequest.builder()
                         .fulfillmentService(fulfillmentService)
                         .fulfillmentType(UrbanConstants.FT_SHIP)
                         .lineId(String.valueOf(counter))
@@ -94,45 +98,46 @@ public class UrbanPopulateInventoryReservationRequest {
                         .uom(eleItem.getAttribute(UrbanConstants.A_UOM))
                         .locationReservationDetails(locationReservationDetailsRequests)
                         .build();
-                log.debug("yantriksLineReservationDetailsRequest.getLocationReservationDetails()"+yantriksLineReservationDetailsRequest.getLocationReservationDetails().isEmpty());
+                log.debug("yantriksLineReservationDetailsRequest.getLocationReservationDetails()"+ reservationOrderLineRequest.getLocationReservationDetails().isEmpty());
                 log.debug("Populating LINE Request");
-                lineReservationDetailsRequests.add(yantriksLineReservationDetailsRequest);
+                lineReservationDetailsRequests.add(reservationOrderLineRequest);
                 counter++;
             }
         }
-        return YantriksReservationRequest.builder()
-                .expirationTime(expirationTime)
-                .expirationTimeUnit(expirationTimeUnit)
+        return ReservationOrderRequest.builder()
+                .expirationTime(new Long(expirationTime))
+                .expirationTimeUnit(TimeUnit.valueOf(expirationTimeUnit))
                 .orderId(firstInvReservation.getAttribute(UrbanConstants.A_RESERVATION_ID))
                 .orgId(orgId)
-                .updateTime(yantriksUtil.getCurrentDateOrTimeStamp(updateTimeFormatter))
+              //  .updateTime(yantriksUtil.getCurrentDateOrTimeStamp(updateTimeFormatter))
+                .updateTime(ZonedDateTime.now())
                 .updateUser(UrbanConstants.V_RT_URBN_USER)
                 .lineReservationDetails(lineReservationDetailsRequests)
                 .build();
     }
 
-    private boolean checkAndUpdateLineReservations(List<YantriksLineReservationDetailsRequest> lineReservationDetailsRequests, String itemId, String shipNode, String shipDate, String locationType, int qtyToPut) {
+    private boolean checkAndUpdateLineReservations(List<ReservationOrderLineRequest> lineReservationDetailsRequests, String itemId, String shipNode, String shipDate, String locationType, int qtyToPut) {
         AtomicBoolean linePresent = new AtomicBoolean(false);
         lineReservationDetailsRequests.stream()
                 .forEach(lineReservationDetailsRequest -> {
                     if (lineReservationDetailsRequest.getProductId().equals(itemId)) {
                         if (!checkUpdateOrAddLocationReservations(lineReservationDetailsRequest.getLocationReservationDetails(), shipNode, shipDate, qtyToPut)) {
                             log.debug("Did not find Location Hence adding one");
-                            List<YantriksReservationDemandTypeRequest> demands = new ArrayList<>();
-                            YantriksReservationDemandTypeRequest yantriksReservationDemandTypeRequest = YantriksReservationDemandTypeRequest.builder()
+                            List<ReservationDemandTypeRequest> demands = new ArrayList<>();
+                            ReservationDemandTypeRequest reservationDemandTypeRequest = ReservationDemandTypeRequest.builder()
                                     .demandType(UrbanConstants.DT_RESERVED)
                                     .quantity(qtyToPut)
                                     .reservationDate(shipDate)
                                     .segment(segment)
                                     .build();
-                            demands.add(yantriksReservationDemandTypeRequest);
+                            demands.add(reservationDemandTypeRequest);
 
-                            YantriksLocationReservationDetailsRequest yantriksLocationReservationDetailsRequest =                                yantriksLocationReservationDetailsRequest = YantriksLocationReservationDetailsRequest.builder()
+                            ReservationProductLocationRequest reservationProductLocationRequest =                                reservationProductLocationRequest = ReservationProductLocationRequest.builder()
                                         .locationId(shipNode)
                                         .locationType(locationType)
                                         .demands(demands)
                                         .build();
-                            lineReservationDetailsRequest.getLocationReservationDetails().add(yantriksLocationReservationDetailsRequest);
+                            lineReservationDetailsRequest.getLocationReservationDetails().add(reservationProductLocationRequest);
                         }
                         linePresent.set(true);
                     }
@@ -140,7 +145,7 @@ public class UrbanPopulateInventoryReservationRequest {
         return linePresent.get();
     }
 
-    private boolean checkUpdateOrAddLocationReservations(List<YantriksLocationReservationDetailsRequest> locationReservationDetails, String shipNode, String shipDate, int qtyToPut) {
+    private boolean checkUpdateOrAddLocationReservations(List<ReservationProductLocationRequest> locationReservationDetails, String shipNode, String shipDate, int qtyToPut) {
         AtomicBoolean locationPresent = new AtomicBoolean(false);
         locationReservationDetails.forEach(locationReservationDetail -> {
             if (locationReservationDetail.getLocationId().equals(shipNode)) {
@@ -151,14 +156,14 @@ public class UrbanPopulateInventoryReservationRequest {
         return locationPresent.get();
     }
 
-    private void addDemandDetails(List<YantriksReservationDemandTypeRequest> demands, String shipDate, int qtyToPut) {
+    private void addDemandDetails(List<ReservationDemandTypeRequest> demands, String shipDate, int qtyToPut) {
         log.debug("Adding the Demand Details");
-                    YantriksReservationDemandTypeRequest yantriksReservationDemandTypeRequest = YantriksReservationDemandTypeRequest.builder()
+                    ReservationDemandTypeRequest reservationDemandTypeRequest = ReservationDemandTypeRequest.builder()
                             .demandType(UrbanConstants.DT_RESERVED)
                             .quantity(qtyToPut)
                             .reservationDate(shipDate)
                             .segment(segment)
                             .build();
-                    demands.add(yantriksReservationDemandTypeRequest);
+                    demands.add(reservationDemandTypeRequest);
     }
 }

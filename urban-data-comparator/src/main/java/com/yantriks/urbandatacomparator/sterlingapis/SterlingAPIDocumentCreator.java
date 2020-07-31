@@ -14,10 +14,11 @@ public class SterlingAPIDocumentCreator {
         return inDoc;
     }
 
-    public Document createInDocForGetOrderList(String enterpriseCode, String orderNo) {
+    public Document createInDocForGetOrderList(String enterpriseCode, String orderNo,String documentType) {
         Document inDoc = SCXmlUtil.createDocument(UrbanConstants.ELE_ORDER);
         inDoc.getDocumentElement().setAttribute(UrbanConstants.A_ORDER_NO, orderNo);
-        inDoc.getDocumentElement().setAttribute(UrbanConstants.A_DOCUMENT_TYPE, UrbanConstants.V_DOCTYPE_0001);
+        inDoc.getDocumentElement().setAttribute(UrbanConstants.A_DOCUMENT_TYPE, documentType);
+//        inDoc.getDocumentElement().setAttribute(UrbanConstants.A_DOCUMENT_TYPE, UrbanConstants.V_DOCTYPE_0001);
         inDoc.getDocumentElement().setAttribute(UrbanConstants.A_ENTERPRISE_CODE, enterpriseCode);
         return inDoc;
     }

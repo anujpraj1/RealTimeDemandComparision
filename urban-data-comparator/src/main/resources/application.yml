@@ -1,17 +1,27 @@
 server:
   port: 8060
 
+spring:
+  main:
+    allow-bean-definition-overriding: true
+
+ribbon:
+  eureka:
+    enabled: false
+  EnableZoneAffinity: true
+  IsSecure: true
+
 data:
   input:
-    absolutedirectory: D:\temp\input
-    filename: sample.csv
+    absolutedirectory: /Users/shash/Documents/urban/jars/
+    filename: small.csv
     option:
       noop: true
       maxMessagesPerPoll: 1
       delay: 1000
   output:
-    absolutedirectory: D:\temp\output
-    filename: outsample.csv
+    absolutedirectory: /Users/shash/Documents/urban/jars/
+    filename: output.csv
     option:
       fileexists: Append
   mode:
@@ -21,8 +31,8 @@ data:
     input:
       skipHeader: true
   process:
-    sedathreads: 5
-    csvthreads: 3
+    sedathreads: 1
+    csvthreads: 1
 
 logging:
   level:
@@ -42,7 +52,9 @@ urban:
     protocol: https
     timeout: 10000
     availability:
-      host: staging-yantriks-api.urbncloud.com/availability #PROD - yantriks-api.urbncloud.com/availability #yantriks-dev-availability-api01.urbn.com   #yantriks-api.urbncloud.com/availability       #STAGING - staging-yantriks-api.urbncloud.com/availability # #34.102.178.188
+#      host: staging-yantriks-api.urbncloud.com/availability #PROD - yantriks-api.urbncloud.com/availability #yantriks-dev-availability-api01.urbn.com   #yantriks-api.urbncloud.com/availability       #STAGING - staging-yantriks-api.urbncloud.com/availability # #34.102.178.188
+      host: "35.186.197.207"
+      host2: staging-yantriks-api.urbncloud.com/availability #"https://35.186.197.207"
       port:
     inventorylite:
       host: localhost
@@ -63,6 +75,7 @@ graceful:
 
 seda:
   queue: urbandatacompare
+  queueSize: 10000
 
 apicall:
   newHttpClientCall: false
@@ -73,3 +86,12 @@ security:
   skid: STERLING-1
   expireTime: 3600
 
+
+feign:
+  httpclient:
+    maxConnections: 10
+    maxConnectionsPerRoute: 7
+  retry:
+    period: 50000
+    duration: 360000
+    maxAttempts: 5

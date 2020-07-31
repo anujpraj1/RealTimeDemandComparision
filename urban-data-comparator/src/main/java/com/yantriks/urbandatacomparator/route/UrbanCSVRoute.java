@@ -10,7 +10,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.util.concurrent.Executors;
+
+import static com.yantriks.urbandatacomparator.configuration.UrbanDataCompareAppConfig.INSTANCE_ID;
 
 @Component
 @Slf4j
@@ -55,6 +58,9 @@ public class UrbanCSVRoute extends RouteBuilder {
     @Value("${seda.queue}")
     private String sedaQueue;
 
+    @Value("${seda.queueSize}")
+    private String sedaQueueSize;
+
     @Autowired
     UrbanConditionCheck urbanConditionCheck;
 
@@ -69,10 +75,12 @@ public class UrbanCSVRoute extends RouteBuilder {
 
         String inputFileURI = getAbsFileURIPath(absInDirectoryPath) + getInputQueryParams();
         log.debug("Input FIle URI :: " + inputFileURI);
-        String outputFileURI = getAbsFileURIPath(absOPDirectoryPath) + getOutputQueryParams();
+        String outputFileURI = getAbsFileURIPath(absOPDirectoryPath+INSTANCE_ID+ File.separator)
+                + getOutputQueryParams();
         log.debug("Output FIle URI :: " + outputFileURI);
 
         String SEDA_END_POINT = getSedaUri(sedaQueue);
+        //uri="seda:message?size=16&amp;blockWhenFull=true" />
 
         onCompletion().process(exchange -> {
             log.debug("Success Response for " + exchange.getIn().getBody());
@@ -133,7 +141,8 @@ public class UrbanCSVRoute extends RouteBuilder {
     }
 
     private String getSedaUri(String sedaQueue) {
-        return "seda:" + sedaQueue;
+        return "seda:" + sedaQueue+"?size="+sedaQueueSize;
+//        uri="seda:message?size=16&amp;blockWhenFull=true"
     }
 
 }

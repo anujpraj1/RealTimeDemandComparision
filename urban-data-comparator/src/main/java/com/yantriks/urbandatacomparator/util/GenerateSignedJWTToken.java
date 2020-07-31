@@ -23,22 +23,22 @@ import java.util.concurrent.TimeUnit;
 
 public class GenerateSignedJWTToken implements YIFCustomApi {
 
-  private Properties props;
-  private static YFCLogCategory log = YFCLogCategory.instance(GenerateSignedJWTToken.class);
+    private Properties props;
+    private static YFCLogCategory log = YFCLogCategory.instance(GenerateSignedJWTToken.class);
 
-  @Override
-  public void setProperties(Properties props) throws Exception {
-    // TODO Auto-generated method stub
-    this.props = props;
-  }
+    @Override
+    public void setProperties(Properties props) throws Exception {
+        // TODO Auto-generated method stub
+        this.props = props;
+    }
 
-  /**
-   * This method fetches
-   * 
-   * @param env
-   * @param inDoc
-   * @return Sting JWTToken
-   */
+    /**
+     * This method fetches
+     *
+     * @param env
+     * @param inDoc
+     * @return Sting JWTToken
+     */
 
 //  public Document getJWTToken(YFSEnvironment env, Document inDoc) throws YIFClientCreationException, RemoteException, ParserConfigurationException {
 //
@@ -58,61 +58,61 @@ public class GenerateSignedJWTToken implements YIFCustomApi {
 //
 //  }
 
-  
-  /**
-   * This method generates JWT Token
-   * 
-   * @return Sting JWTToken
-   */
-  public static String getJWTTokenStr(String strSecretKey,String strSkid,String strExpiryTime) throws YIFClientCreationException, RemoteException, ParserConfigurationException {
 
-    log.debug("Executing GenerateSignedJWTToken.getJWTToken()-Start");
+    /**
+     * This method generates JWT Token
+     *
+     * @return Sting JWTToken
+     */
+    public static String getJWTTokenStr(String strSecretKey, String strSkid, String strExpiryTime) {
 
-    // Getting SecretKey from customer_overrides
-    //String strSecretKey = YFSSystem.getProperty("yantriks.jwt.token.secretKey");
-    // DEV String strSecretKey = "da53d169065e21d726190c529d2c28f6a3b41ded45b5b382c4c23d139faebe95";
+        log.debug("Executing GenerateSignedJWTToken.getJWTToken()-Start");
+
+        // Getting SecretKey from customer_overrides
+        //String strSecretKey = YFSSystem.getProperty("yantriks.jwt.token.secretKey");
+        // DEV String strSecretKey = "da53d169065e21d726190c529d2c28f6a3b41ded45b5b382c4c23d139faebe95";
 //    String strSecretKey =  getPropertyValue("yantriks.jwt.token.secretKey")   ;//"da53d169065e21d726190c529d2c28f6a3b41ded45b5b382c4c23d139faebe95";
-    //YFSSystem.getProperty("yantriks.jwt.token.secretKey");
+        //YFSSystem.getProperty("yantriks.jwt.token.secretKey");
 
-    // Getting Key ID from customer_overrides
-    //String strKeyID = YFSSystem.getProperty("yantriks.jwt.token.kid");
+        // Getting Key ID from customer_overrides
+        //String strKeyID = YFSSystem.getProperty("yantriks.jwt.token.kid");
 
-    String strKeyID = strSkid;// getPropertyValue("yantriks.jwt.token.kid");//"STERLING-1";
-    log.debug(">>>>>>>>>KeyID:" + strKeyID);
-    
-    // Getting expiryLength from customer_overrides
-    //String strExpiryLenght = YFSSystem.getProperty("yantriks.jwt.token.expiryLength");
-    String strExpiryLenght = strExpiryTime ;//getPropertyValue("yantriks.jwt.token.expiryLength");;//"3600";
-    log.debug(">>>>>>>>>>expiryLength:" + strExpiryLenght);
+        String strKeyID = strSkid;// getPropertyValue("yantriks.jwt.token.kid");//"STERLING-1";
+        log.debug(">>>>>>>>>KeyID:" + strKeyID);
 
-    // Code to generate signed token
+        // Getting expiryLength from customer_overrides
+        //String strExpiryLenght = YFSSystem.getProperty("yantriks.jwt.token.expiryLength");
+        String strExpiryLenght = strExpiryTime;//getPropertyValue("yantriks.jwt.token.expiryLength");;//"3600";
+        log.debug(">>>>>>>>>>expiryLength:" + strExpiryLenght);
 
-    Date now = new Date();
+        // Code to generate signed token
 
-    Date expTime = new Date(
-        System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(Long.parseLong(strExpiryLenght)));
+        Date now = new Date();
 
-    // Build the JWT payload
-    Map<String, Object> headerClaims = new HashMap<String, Object>();
+        Date expTime = new Date(
+                System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(Long.parseLong(strExpiryLenght)));
 
-    headerClaims.put("kid", strKeyID);
+        // Build the JWT payload
+        Map<String, Object> headerClaims = new HashMap<String, Object>();
 
-    JWTCreator.Builder token = JWT.create().withHeader(headerClaims).withIssuedAt(now)
-        // Expires after 'expiraryLength' seconds
-        .withExpiresAt(expTime).withIssuer(strKeyID).withSubject("OMS");
-    
- // need to decode the token
-    byte[] decodedKeyBytes = Base64.getDecoder().decode(strSecretKey);
+        headerClaims.put("kid", strKeyID);
 
-    // Sign the JWT
-    Algorithm algorithm = Algorithm.HMAC256(decodedKeyBytes);
-    
-    String strJWTToken = token.sign(algorithm);
+        JWTCreator.Builder token = JWT.create().withHeader(headerClaims).withIssuedAt(now)
+                // Expires after 'expiraryLength' seconds
+                .withExpiresAt(expTime).withIssuer(strKeyID).withSubject("OMS");
 
-    log.debug("JWT Token Generated" + strJWTToken);
-    return strJWTToken;
+        // need to decode the token
+        byte[] decodedKeyBytes = Base64.getDecoder().decode(strSecretKey);
 
-  }
+        // Sign the JWT
+        Algorithm algorithm = Algorithm.HMAC256(decodedKeyBytes);
+
+        String strJWTToken = token.sign(algorithm);
+
+        log.debug("JWT Token Generated" + strJWTToken);
+        return strJWTToken;
+
+    }
 
 //  public static String getPropertyValue(String strProperty) throws YIFClientCreationException, RemoteException, ParserConfigurationException {
 //

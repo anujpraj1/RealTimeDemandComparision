@@ -10,4 +10,6 @@ public class UrbanCsvData {
     private String enterpriseCode;
 
     private String reservationId;
+
+    private String documentType;
 }

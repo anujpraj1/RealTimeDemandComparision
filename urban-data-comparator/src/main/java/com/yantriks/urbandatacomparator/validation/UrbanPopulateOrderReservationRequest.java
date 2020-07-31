@@ -2,10 +2,10 @@ package com.yantriks.urbandatacomparator.validation;
 
 import com.sterlingcommerce.baseutil.SCXmlUtil;
 import com.yantra.yfc.core.YFCObject;
-import com.yantriks.urbandatacomparator.model.YantriksLineReservationDetailsRequest;
-import com.yantriks.urbandatacomparator.model.YantriksLocationReservationDetailsRequest;
-import com.yantriks.urbandatacomparator.model.YantriksReservationDemandTypeRequest;
-import com.yantriks.urbandatacomparator.model.YantriksReservationRequest;
+import com.yantriks.urbandatacomparator.model.request.ReservationOrderLineRequest;
+import com.yantriks.urbandatacomparator.model.request.ReservationProductLocationRequest;
+import com.yantriks.urbandatacomparator.model.request.ReservationDemandTypeRequest;
+import com.yantriks.urbandatacomparator.model.request.ReservationOrderRequest;
 import com.yantriks.urbandatacomparator.util.UrbanConstants;
 import com.yantriks.urbandatacomparator.util.YantriksUtil;
 import com.yantriks.yih.adapter.util.YantriksConstants;
@@ -19,7 +19,9 @@ import org.w3c.dom.NodeList;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Component
 @Slf4j
@@ -40,20 +42,34 @@ public class UrbanPopulateOrderReservationRequest {
 
     public String getDemandTypeForCurrentStatus(String status,String strShipNode,String strLineType,Boolean isProcureFromNodePresent) {
 
+        String strStatusTemp = status;
+        if(status.contains(".")){
+            int indexOfDot = status.indexOf(".");
+            status = status.substring(0,indexOfDot);
+            log.debug("strVal after formatting "+status);
+        }
+
              Integer iStatus = (int) Double.parseDouble(status);
 
-        log.debug("iStatus :"+iStatus);
-        log.debug("isProcureFromNodePresent :"+isProcureFromNodePresent);
-        log.debug("strLineType :"+strLineType);
+        log.debug("iStatus :"+iStatus+ " isProcureFromNodePresent :"+isProcureFromNodePresent+" strLineType :"+strLineType);
             if(strLineType.equalsIgnoreCase("FURNITURE") && Boolean.TRUE.equals(isProcureFromNodePresent)){
-                if(iStatus>=1500 && iStatus <2500)
-                {
+
+                if(UrbanConstants.IM_LIST_TO_TERMINAL_STATUSES.contains(strStatusTemp)){
+                    log.debug(" procurement TO received  :"+strStatusTemp);
                     return "SCHEDULED";
                 }
-                if(iStatus>=2500 && iStatus<3200)
-                { log.info("iStatus "+iStatus);
+//                if(iStatus>=1500 && iStatus <2500)
+//                {
+//                    return "SCHEDULED";
+//                }
+                if(UrbanConstants.IM_LIST_TO_INITIAL_STATUSES.contains(strStatusTemp)){
+                    log.debug(" TO in progress :"+strStatusTemp);
                     return "SCHEDULED_TO";
                 }
+//                if(iStatus>=2500 && iStatus<3200)
+//                { log.info("iStatus "+iStatus);
+//                    return "SCHEDULED_TO";
+//                }
             }
             if(iStatus >=1500 && iStatus <3200){
                 return "SCHEDULED";
@@ -73,14 +89,14 @@ public class UrbanPopulateOrderReservationRequest {
         return null;
     }
 
-    public YantriksReservationRequest createReservationRequestFromOrderListOP(Document inDoc) {
+    public ReservationOrderRequest createReservationRequestFromOrderListOP(Document inDoc) {
 
         Element eleRoot = inDoc.getDocumentElement();
         Element eleOrder = SCXmlUtil.getChildElement(eleRoot, UrbanConstants.ELE_ORDER);
         Element eleOrderLines = SCXmlUtil.getChildElement(eleOrder, UrbanConstants.E_ORDER_LINES);
         NodeList nlOrderLines = eleOrderLines.getElementsByTagName(UrbanConstants.E_ORDER_LINE);
         int orderLinesLen = nlOrderLines.getLength();
-        List<YantriksLineReservationDetailsRequest> lineReservationDetailsRequests = new ArrayList<>();
+        List<ReservationOrderLineRequest> lineReservationDetailsRequests = new ArrayList<>();
 
         String strFulfillmentType = null;
 
@@ -122,21 +138,23 @@ public class UrbanPopulateOrderReservationRequest {
                 log.debug("orderLineScheduleKey :"+orderLineScheduleKey);
                 if (scheduleKeyToStatusMap.containsKey(orderLineScheduleKey)) {
                     String statusFromMap = scheduleKeyToStatusMap.get(orderLineScheduleKey);
+//                    String strStatusTemp = statusFromMap;
                     log.debug("statusFromMap : "+statusFromMap);
                     if(!YFCObject.isVoid(strProcureFromNode)){
                         isProcureFromNodePresent = true;
                     }
-                    if(UrbanConstants.IM_LIST_SHIPPED_STATUSES.contains(statusFromMap)){
-                        statusFromMap="3700";
-                    }
-                    if(statusFromMap.contains(".")){
-                        int indexOfDot = statusFromMap.indexOf(".");
-                        statusFromMap = statusFromMap.substring(0,indexOfDot);
-                        log.debug("strVal after formatting "+statusFromMap);
-                    }
-                    Integer iStatus = (int) Double.parseDouble(statusFromMap);
+//                    if(UrbanConstants.IM_LIST_SHIPPED_STATUSES.contains(statusFromMap)){
+//                        statusFromMap="3700";
+//                    }
+//                    if(statusFromMap.contains(".")){
+//                        int indexOfDot = statusFromMap.indexOf(".");
+//                        statusFromMap = statusFromMap.substring(0,indexOfDot);
+//                        log.debug("strVal after formatting "+statusFromMap);
+//                    }
+
+//                    Integer iStatus = (int) Double.parseDouble(statusFromMap);
                     String strShipNode = null;
-                    if(strLineType.equalsIgnoreCase("FURNITURE") && Boolean.TRUE.equals(isProcureFromNodePresent) && iStatus<2500 ){
+                    if(strLineType.equalsIgnoreCase("FURNITURE") && Boolean.TRUE.equals(isProcureFromNodePresent) && statusFromMap.compareTo("2500")<0){
                         strShipNode = strProcureFromNode;
                         log.debug("equating procurement node to shipnode" +strShipNode +"------"+strProcureFromNode);
                     }
@@ -165,13 +183,13 @@ public class UrbanPopulateOrderReservationRequest {
             }
 
             log.debug("Map which is going to be utilised for creating deamnds w.r.t to shipnodes : " + shipNodeToSchedule);
-            List<YantriksLocationReservationDetailsRequest> locationReservationDetailsRequests = new ArrayList<>();
+            List<ReservationProductLocationRequest> locationReservationDetailsRequests = new ArrayList<>();
             Boolean finalIsProcureFromNodePresent = isProcureFromNodePresent;
             shipNodeToSchedule.entrySet()
                     .stream()
                     .forEach(e -> {
                         List<Element> scheduleList = e.getValue();
-                        List<YantriksReservationDemandTypeRequest> reservationDemandTypeRequests = new ArrayList<>();
+                        List<ReservationDemandTypeRequest> reservationDemandTypeRequests = new ArrayList<>();
                         scheduleList.stream()
                                 .forEach(element -> {
                                     String quantity = element.getAttribute(UrbanConstants.A_QUANTITY);
@@ -194,8 +212,7 @@ public class UrbanPopulateOrderReservationRequest {
                                             try {
                                                 SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
                                                 String strCurrentDate = yantriksUtil.getCurrentDateOrTimeStamp(format);
-                                                log.debug("strCurrentDate :"+strCurrentDate);
-                                                log.debug("strExpectedShipmentDate :"+strExpectedShipmentDate);
+                                                log.debug("strCurrentDate :"+strCurrentDate + " strExpectedShipmentDate :"+strExpectedShipmentDate);
                                                strFormattedESDate =   yantriksUtil.getDateinUTC(strExpectedShipmentDate);
                                                Date ESDate = format.parse(strExpectedShipmentDate);
                                                Date currentDate = format.parse(strCurrentDate);
@@ -210,33 +227,33 @@ public class UrbanPopulateOrderReservationRequest {
 
                                         boolean isDemandTypeAlreadyAdded = false;
                                        for(int count=0 ;count<reservationDemandTypeRequests.size();count++){
-                                           YantriksReservationDemandTypeRequest yantriksReservationDemandTypeRequest = reservationDemandTypeRequests.get(count);
-                                           if(demandType.equals(yantriksReservationDemandTypeRequest.getDemandType())){
-                                               int currQty = yantriksReservationDemandTypeRequest.getQuantity();
-                                               yantriksReservationDemandTypeRequest.setQuantity(currQty+intQty);
+                                           ReservationDemandTypeRequest reservationDemandTypeRequest = reservationDemandTypeRequests.get(count);
+                                           if(demandType.equals(reservationDemandTypeRequest.getDemandType())){
+                                               int currQty = reservationDemandTypeRequest.getQuantity();
+                                               reservationDemandTypeRequest.setQuantity(currQty+intQty);
                                                log.debug("demand type already present , hence only increasing quantity");
                                                isDemandTypeAlreadyAdded = true;
                                            }
                                        }
 
                                        if(Boolean.FALSE.equals(isDemandTypeAlreadyAdded)){
-                                           YantriksReservationDemandTypeRequest yantriksReservationDemandTypeRequest = YantriksReservationDemandTypeRequest.builder()
+                                           ReservationDemandTypeRequest reservationDemandTypeRequest = ReservationDemandTypeRequest.builder()
                                                    .demandType(demandType)
                                                    .quantity(intQty)
                                                    .reservationDate(strFormattedESDate)
                                                    .segment(segment)
                                                    .build();
-                                           log.debug("Current Demand Adding :: "+yantriksReservationDemandTypeRequest);
-                                           reservationDemandTypeRequests.add(yantriksReservationDemandTypeRequest);
+                                           log.debug("Current Demand Adding :: "+ reservationDemandTypeRequest);
+                                           reservationDemandTypeRequests.add(reservationDemandTypeRequest);
                                        }
 
                                     } else {
                                         log.debug("Status found : " + statusOfDemand + " Hence did not create a demand for it");
                                     }
                                 });
-                        YantriksLocationReservationDetailsRequest yantriksLocationReservationDetailsRequest = null;
+                        ReservationProductLocationRequest reservationProductLocationRequest = null;
                         try {
-                            yantriksLocationReservationDetailsRequest = YantriksLocationReservationDetailsRequest.builder()
+                            reservationProductLocationRequest = ReservationProductLocationRequest.builder()
                                     .locationId(e.getKey().equals("")?"NETWORK":e.getKey())
                                     .locationType(e.getKey().equals("")?"NETWORK":yantriksUtil.
                                             getLocationType(e.getKey()))
@@ -247,7 +264,7 @@ public class UrbanPopulateOrderReservationRequest {
                         }
                         log.debug("EMPTY CHECK FOR DEMAND "+reservationDemandTypeRequests.isEmpty());
                         if (!reservationDemandTypeRequests.isEmpty()) {
-                            locationReservationDetailsRequests.add(yantriksLocationReservationDetailsRequest);
+                            locationReservationDetailsRequests.add(reservationProductLocationRequest);
                         }
                     });
 
@@ -260,7 +277,7 @@ public class UrbanPopulateOrderReservationRequest {
              else{
                  strFulfillmentType = UrbanConstants.FT_SHIP;
              }
-            YantriksLineReservationDetailsRequest yantriksLineReservationDetailsRequest = YantriksLineReservationDetailsRequest.builder()
+            ReservationOrderLineRequest reservationOrderLineRequest = ReservationOrderLineRequest.builder()
                    // .fulfillmentService(fulfillmentService)
                     .fulfillmentType(strFulfillmentType)
                     .lineId(currOrderLine.getAttribute(UrbanConstants.A_PRIME_LINE_NO))
@@ -270,19 +287,19 @@ public class UrbanPopulateOrderReservationRequest {
                     .build();
             log.debug("EMPTY CHECK FOR LOCATION "+locationReservationDetailsRequests.isEmpty());
             if (!locationReservationDetailsRequests.isEmpty()) {
-                lineReservationDetailsRequests.add(yantriksLineReservationDetailsRequest);
+                lineReservationDetailsRequests.add(reservationOrderLineRequest);
             }
         }
 
         SimpleDateFormat updateTimeFormatter = new SimpleDateFormat(
                 "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US);
 
-        return YantriksReservationRequest.builder()
-                .expirationTime(180)
-                .expirationTimeUnit(UrbanConstants.V_MINUTES)
+        return ReservationOrderRequest.builder()
+                .expirationTime(180L)
+                .expirationTimeUnit(TimeUnit.MINUTES)
                 .orderId(yantriksUtil.getReservationID(eleOrder))
                 .orgId(orgId)
-                .updateTime(yantriksUtil.getCurrentDateOrTimeStamp(updateTimeFormatter))
+                .updateTime(ZonedDateTime.now())
                 .updateUser(UrbanConstants.V_RT_URBN_USER)
                 .lineReservationDetails(lineReservationDetailsRequests)
                 .build();
